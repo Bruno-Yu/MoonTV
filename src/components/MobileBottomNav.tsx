@@ -105,14 +105,14 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
-      <ul className='flex items-center'>
+      <ul className='flex items-center pb-4 pt-2'>
         {navItems.map((item) => {
           const active = isActive(item.href);
           return (
             <li key={item.href} className='flex-shrink-0 w-1/5'>
               <Link
                 href={item.href}
-                className='flex flex-col items-center justify-center w-full h-14 gap-1 text-xs'
+                className='flex flex-col items-center justify-center w-full h-14 gap-1 text-sm'
               >
                 <item.icon
                   className={`h-6 w-6 ${
