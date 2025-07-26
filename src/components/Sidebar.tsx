@@ -1,9 +1,13 @@
 'use client';
 
 import {
+  Ampersand,
+  Anvil,
+  BeerOff,
+  BellMinus,
+  Bomb,
   Clover,
   Film,
-  Github,
   Home,
   Menu,
   MessageCircleHeart,
@@ -12,8 +16,7 @@ import {
   Star,
   Swords,
   Tv,
-  VenetianMask,
-} from 'lucide-react';
+  VenetianMask} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -137,43 +140,49 @@ const Sidebar = ({ onToggle, activePath = '/' }: SidebarProps) => {
 
   const menuItems = [
     {
-      icon: Film,
-      label: '热门电影',
-      href: '/douban?type=movie&tag=热门&title=热门电影',
-    },
-    {
-      icon: Tv,
-      label: '热门剧集',
-      href: '/douban?type=tv&tag=热门&title=热门剧集',
-    },
-    {
       icon: Star,
       label: '豆瓣 Top250',
       href: '/douban?type=movie&tag=top250&title=豆瓣 Top250',
     },
     {
+      icon: Tv,
+      label: '熱門劇集',
+      href: '/douban?type=tv&tag=热门&title=热门剧集',
+    },
+    {
       icon: Clover,
-      label: '综艺',
+      label: '綜藝',
       href: '/douban?type=tv&tag=综艺&title=综艺',
     },
-    { icon: Swords, label: '美剧', href: '/douban?type=tv&tag=美剧' },
+    { icon: Swords, label: '美劇', href: '/douban?type=tv&tag=美剧' },
     {
       icon: MessageCircleHeart,
-      label: '韩剧',
+      label: '韓劇',
       href: '/douban?type=tv&tag=韩剧',
     },
-    { icon: MountainSnow, label: '日剧', href: '/douban?type=tv&tag=日剧' },
-    { icon: VenetianMask, label: '日漫', href: '/douban?type=tv&tag=日本动画' },
+    { icon: MountainSnow, label: '日劇', href: '/douban?type=tv&tag=日剧' },
+    { icon: VenetianMask, label: '陸劇', href: '/douban?type=tv&tag=国产剧' },
+    { icon: Ampersand, label: '日漫', href: '/douban?type=tv&tag=日本动画' },
+    {
+      icon: Film,
+      label: '熱門電影',
+      href: '/douban?type=movie&tag=热门&title=热门电影',
+    },
+    { icon: Anvil, label: '華語電影', href: '/douban?type=movie&tag=华语' },
+    { icon: BeerOff, label: '歐美電影', href: '/douban?type=movie&tag=欧美' },
+    { icon: BellMinus, label: '韓國電影', href: '/douban?type=movie&tag=韩国' },
+    { icon: Bomb, label: '日本電影', href: '/douban?type=movie&tag=日本' },
   ];
 
-  const { siteName } = useSite();
-  if (siteName !== 'MoonTV') {
-    menuItems.push({
-      icon: Github,
-      label: 'MoonTV',
-      href: 'https://github.com/senshinya/MoonTV',
-    });
-  }
+
+  // const { siteName } = useSite();
+  // if (siteName !== 'MoonTV') {
+  //   menuItems.push({
+  //     icon: Github,
+  //     label: 'MoonTV',
+  //     href: 'https://github.com/senshinya/MoonTV',
+  //   });
+  // }
 
   return (
     <SidebarContext.Provider value={contextValue}>

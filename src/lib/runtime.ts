@@ -80,6 +80,26 @@ export const config = {
       api: 'https://ikunzyapi.com/api.php/provide/vod',
       name: 'iKun资源',
     },
+    subocj: {
+      api: 'https://subocj.com/api.php/provide/vod',
+      name: '速播資源',
+    },
+    hhzy: {
+      api: 'https://hhzyapi.com/api.php/provide/vod',
+      name: '豪華資源',
+    },
+    ukzy: {
+      api: 'https://api.ukuapi88.com/api.php/provide/vod',
+      name: 'U酷資源',
+    },
+    fczy888: {
+      api: 'https://api.fczy888.me/api.php/provide/vod',
+      name: '蜂巢資源',
+    },
+    suoni: {
+      api: 'https://suoniapi.com/api.php/provide/vod',
+      name: '索尼資源',
+    },
   },
 } as const;
 

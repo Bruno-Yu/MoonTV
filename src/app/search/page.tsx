@@ -16,6 +16,8 @@ import { SearchResult } from '@/lib/types';
 import PageLayout from '@/components/PageLayout';
 import VideoCard from '@/components/VideoCard';
 
+import { zhConverter } from './zh-converter';
+
 function SearchPageClient() {
   // 搜索历史
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
@@ -49,6 +51,12 @@ function SearchPageClient() {
       map.set(key, arr);
     });
     return Array.from(map.entries()).sort((a, b) => {
+      // 標題部分符合的排在前面
+      const aMatch = a[1][0].title.includes(searchQuery.trim());
+      const bMatch = b[1][0].title.includes(searchQuery.trim());
+      if (aMatch && !bMatch) return -1;
+      if (!aMatch && bMatch) return 1;
+
       // 优先排序：标题与搜索词完全一致的排在前面
       const aExactMatch = a[1][0].title === searchQuery.trim();
       const bExactMatch = b[1][0].title === searchQuery.trim();
@@ -91,12 +99,28 @@ function SearchPageClient() {
   const fetchSearchResults = async (query: string) => {
     try {
       setIsLoading(true);
+      
       const response = await fetch(
-        `/api/search?q=${encodeURIComponent(query.trim())}`
+        `/api/search?q=${encodeURIComponent(query.trim())}`,
       );
+      
+      
+      if (!response.ok) {
+        console.error('API 回應錯誤:', response.status, response.statusText);
+        setSearchResults([]);
+        return;
+      }
+       
       const data = await response.json();
+      
       setSearchResults(
         data.results.sort((a: SearchResult, b: SearchResult) => {
+          // 標題部分符合的排在前面
+          const aMatch = a.title.includes(query.trim());
+          const bMatch = b.title.includes(query.trim());
+          if (aMatch && !bMatch) return -1;
+          if (!aMatch && bMatch) return 1;
+
           // 优先排序：标题与搜索词完全一致的排在前面
           const aExactMatch = a.title === query.trim();
           const bExactMatch = b.title === query.trim();
@@ -114,6 +138,7 @@ function SearchPageClient() {
       );
       setShowResults(true);
     } catch (error) {
+      console.error('搜尋請求失敗:', error);
       setSearchResults([]);
     } finally {
       setIsLoading(false);
@@ -122,8 +147,14 @@ function SearchPageClient() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmed = searchQuery.trim().replace(/\s+/g, ' ');
+    let trimmed = searchQuery.trim().replace(/\s+/g, ' ');
     if (!trimmed) return;
+
+    // 將搜索內容轉換為簡體中文
+    // if (typeof window !== 'undefined' && (window as any).zhconver) {
+    //   trimmed = (window as any).zhconver.t2s(trimmed);
+    // }
+    trimmed = zhConverter.t2s(trimmed);
 
     // 回显搜索框
     setSearchQuery(trimmed);
@@ -154,7 +185,7 @@ function SearchPageClient() {
                 type='text'
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder='搜索电影、电视剧...'
+                placeholder='搜索電影、電視劇...'
                 className='w-full h-12 rounded-lg bg-gray-50/80 py-3 pl-10 pr-4 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:bg-white border border-gray-200/50 shadow-sm dark:bg-gray-800 dark:text-gray-300 dark:placeholder-gray-500 dark:focus:bg-gray-700 dark:border-gray-700'
               />
             </div>
@@ -172,7 +203,7 @@ function SearchPageClient() {
               {/* 标题 + 聚合开关 */}
               <div className='mb-8 flex items-center justify-between'>
                 <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
-                  搜索结果
+                  搜索結果
                 </h2>
                 {/* 聚合开关 */}
                 <label className='flex items-center gap-2 cursor-pointer select-none'>

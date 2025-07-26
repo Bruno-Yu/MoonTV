@@ -154,7 +154,7 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
               }
             `.trim()}
           >
-            选集
+            選集
           </div>
         )}
         <div
@@ -167,7 +167,7 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
             }
           `.trim()}
         >
-          换源
+          換源
         </div>
       </div>
 
@@ -375,7 +375,7 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
                     }}
                     className='w-full text-center text-xs text-gray-500 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-400 transition-colors py-2'
                   >
-                    影片匹配有误？点击去搜索
+                    影片匹配有誤？點擊去搜索
                   </button>
                 </div>
               </div>

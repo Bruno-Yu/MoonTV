@@ -1265,7 +1265,7 @@ function PlayPageClient() {
                 />
               </svg>
               <span className='text-xs font-medium text-gray-600 dark:text-gray-300'>
-                {isEpisodeSelectorCollapsed ? '显示' : '隐藏'}
+                {isEpisodeSelectorCollapsed ? '顯示' : '隱藏'}
               </span>
 
               {/* 精致的状态指示点 */}
