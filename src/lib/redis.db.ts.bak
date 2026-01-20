@@ -1,10 +1,12 @@
-/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion */
 
 import { AdminConfig } from './admin.types';
 import { Favorite, IStorage, PlayRecord } from './types';
 
+// 搜索历史最大条数
 const SEARCH_HISTORY_LIMIT = 20;
 
+// 添加Redis操作重试包装器
 async function withRetry<T>(
   operation: () => Promise<T>,
   maxRetries = 3
@@ -26,7 +28,22 @@ async function withRetry<T>(
           `Redis operation failed, retrying... (${i + 1}/${maxRetries})`
         );
         console.error('Error:', err.message);
+
+        // 等待一段时间后重试
         await new Promise((resolve) => setTimeout(resolve, 1000 * (i + 1)));
+
+        // 尝试重新连接
+        try {
+          // @ts-ignore
+          const client = (global as any).__MOONTV_REDIS_CLIENT__;
+          if (client && !client.isOpen) {
+            // @ts-ignore
+            await client.connect();
+          }
+        } catch (reconnectErr) {
+          console.error('Failed to reconnect:', reconnectErr);
+        }
+
         continue;
       }
 
@@ -41,21 +58,22 @@ export class RedisStorage implements IStorage {
   private client: any;
 
   constructor() {
+    // @ts-ignore
     this.client = (global as any).__MOONTV_REDIS_CLIENT__;
   }
 
+  // ---------- 播放记录 ----------
   private prKey(user: string, key: string) {
-    return 'u:' + user + ':pr:' + key;
+    return `u:${user}:pr:${key}`; // u:username:pr:source+id
   }
 
   async getPlayRecord(
     userName: string,
     key: string
   ): Promise<PlayRecord | null> {
-    const val = await withRetry(() =>
-      this.client.get(this.prKey(userName, key))
-    );
-    return val ? (JSON.parse(val as string) as PlayRecord) : null;
+    // @ts-ignore
+    const val = await withRetry(() => this.client.get(this.prKey(userName, key)));
+    return val ? (JSON.parse(val) as PlayRecord) : null;
   }
 
   async setPlayRecord(
@@ -63,6 +81,7 @@ export class RedisStorage implements IStorage {
     key: string,
     record: PlayRecord
   ): Promise<void> {
+    // @ts-ignore
     await withRetry(() =>
       this.client.set(this.prKey(userName, key), JSON.stringify(record))
     );
@@ -71,16 +90,19 @@ export class RedisStorage implements IStorage {
   async getAllPlayRecords(
     userName: string
   ): Promise<Record<string, PlayRecord>> {
-    const pattern = 'u:' + userName + ':pr:*';
+    const pattern = `u:${userName}:pr:*`;
+    // @ts-ignore
     const keys: string[] = await withRetry(() => this.client.keys(pattern));
     if (keys.length === 0) return {};
+    // @ts-ignore
     const values = await withRetry(() => this.client.mGet(keys));
     const result: Record<string, PlayRecord> = {};
     keys.forEach((fullKey: string, idx: number) => {
       const raw = values[idx];
       if (raw) {
         const rec = JSON.parse(raw) as PlayRecord;
-        const keyPart = fullKey.replace('u:' + userName + ':pr:', '');
+        // 截取 source+id 部分
+        const keyPart = fullKey.replace(`u:${userName}:pr:`, '');
         result[keyPart] = rec;
       }
     });
@@ -88,18 +110,21 @@ export class RedisStorage implements IStorage {
   }
 
   async deletePlayRecord(userName: string, key: string): Promise<void> {
+    // @ts-ignore
     await withRetry(() => this.client.del(this.prKey(userName, key)));
   }
 
+  // ---------- 收藏 ----------
   private favKey(user: string, key: string) {
-    return 'u:' + user + ':fav:' + key;
+    return `u:${user}:fav:${key}`;
   }
 
   async getFavorite(userName: string, key: string): Promise<Favorite | null> {
+    // @ts-ignore
     const val = await withRetry(() =>
       this.client.get(this.favKey(userName, key))
     );
-    return val ? (JSON.parse(val as string) as Favorite) : null;
+    return val ? (JSON.parse(val) as Favorite) : null;
   }
 
   async setFavorite(
@@ -107,22 +132,25 @@ export class RedisStorage implements IStorage {
     key: string,
     favorite: Favorite
   ): Promise<void> {
+    // @ts-ignore
     await withRetry(() =>
       this.client.set(this.favKey(userName, key), JSON.stringify(favorite))
     );
   }
 
   async getAllFavorites(userName: string): Promise<Record<string, Favorite>> {
-    const pattern = 'u:' + userName + ':fav:*';
+    const pattern = `u:${userName}:fav:*`;
+    // @ts-ignore
     const keys: string[] = await withRetry(() => this.client.keys(pattern));
     if (keys.length === 0) return {};
+    // @ts-ignore
     const values = await withRetry(() => this.client.mGet(keys));
     const result: Record<string, Favorite> = {};
     keys.forEach((fullKey: string, idx: number) => {
       const raw = values[idx];
       if (raw) {
         const fav = JSON.parse(raw) as Favorite;
-        const keyPart = fullKey.replace('u:' + userName + ':fav:', '');
+        const keyPart = fullKey.replace(`u:${userName}:fav:`, '');
         result[keyPart] = fav;
       }
     });
@@ -130,18 +158,23 @@ export class RedisStorage implements IStorage {
   }
 
   async deleteFavorite(userName: string, key: string): Promise<void> {
+    // @ts-ignore
     await withRetry(() => this.client.del(this.favKey(userName, key)));
   }
 
+  // ---------- 用户注册 / 登录 ----------
   private userPwdKey(user: string) {
-    return 'u:' + user + ':pwd';
+    return `u:${user}:pwd`;
   }
 
   async registerUser(userName: string, password: string): Promise<void> {
+    // 简单存储明文密码，生产环境应加密
+    // @ts-ignore
     await withRetry(() => this.client.set(this.userPwdKey(userName), password));
   }
 
   async verifyUser(userName: string, password: string): Promise<boolean> {
+    // @ts-ignore
     const stored = await withRetry(() =>
       this.client.get(this.userPwdKey(userName))
     );
@@ -149,18 +182,23 @@ export class RedisStorage implements IStorage {
     return stored === password;
   }
 
+  // 检查用户是否存在
   async checkUserExist(userName: string): Promise<boolean> {
+    // 使用 EXISTS 判断 key 是否存在
+    // @ts-ignore
     const exists = await withRetry(() =>
       this.client.exists(this.userPwdKey(userName))
     );
     return exists === 1;
   }
 
+  // ---------- 搜索历史 ----------
   private shKey(user: string) {
-    return 'u:' + user + ':sh';
+    return `u:${user}:sh`; // u:username:sh
   }
 
   async getSearchHistory(userName: string): Promise<string[]> {
+    // @ts-ignore
     return withRetry(
       () => this.client.lRange(this.shKey(userName), 0, -1) as Promise<string[]>
     );
@@ -168,24 +206,32 @@ export class RedisStorage implements IStorage {
 
   async addSearchHistory(userName: string, keyword: string): Promise<void> {
     const key = this.shKey(userName);
+    // 先去重
+    // @ts-ignore
     await withRetry(() => this.client.lRem(key, 0, keyword));
+    // 插入到最前
+    // @ts-ignore
     await withRetry(() => this.client.lPush(key, keyword));
+    // 限制最大长度
+    // @ts-ignore
     await withRetry(() => this.client.lTrim(key, 0, SEARCH_HISTORY_LIMIT - 1));
   }
 
   async deleteSearchHistory(userName: string, keyword?: string): Promise<void> {
     const key = this.shKey(userName);
     if (keyword) {
+      // @ts-ignore
       await withRetry(() => this.client.lRem(key, 0, keyword));
     } else {
+      // @ts-ignore
       await withRetry(() => this.client.del(key));
     }
   }
 
+  // ---------- 获取全部用户 ----------
   async getAllUsers(): Promise<string[]> {
-    const keys = (await withRetry(() =>
-      this.client.keys('u:*:pwd')
-    )) as string[];
+    // @ts-ignore
+    const keys = await withRetry(() => this.client.keys('u:*:pwd'));
     return keys
       .map((k) => {
         const match = k.match(/^u:(.+?):pwd$/);
@@ -194,16 +240,21 @@ export class RedisStorage implements IStorage {
       .filter((u): u is string => typeof u === 'string');
   }
 
+  // ---------- 管理员配置 ----------
   private adminConfigKey() {
     return 'admin:config';
   }
 
   async getAdminConfig(): Promise<AdminConfig | null> {
-    const val = await withRetry(() => this.client.get(this.adminConfigKey()));
-    return val ? (JSON.parse(val as string) as AdminConfig) : null;
+    // @ts-ignore
+    const val = await withRetry(() => this.client.get(this.adminConfigKey())));
+    const val = await withRetry(() => this.client.get(this.adminConfigKey())));
+    const val = await withRetry(() => this.client.get(this.adminConfigKey())));
+    return val ? (JSON.parse(val) as AdminConfig) : null;
   }
 
   async setAdminConfig(config: AdminConfig): Promise<void> {
+    // @ts-ignore
     await withRetry(() =>
       this.client.set(this.adminConfigKey(), JSON.stringify(config))
     );

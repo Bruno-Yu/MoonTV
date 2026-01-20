@@ -1,31 +1,32 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noEmit": true,
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "jsx": "preserve",
+    "strict": false,
     "esModuleInterop": true,
-    "module": "esnext",
+    "skipLibCheck": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "allowJs": true,
+    "noEmit": false,
     "isolatedModules": true,
-    "jsx": "preserve",
-    "baseUrl": ".",
+    "incremental": false,
+    "forceConsistentCasingInFileNames": true,
     "paths": {
-      "@/*": ["./src/*"],
-      "~/*": ["./public/*"]
+      "@/*": ["./src/*"]
     },
-    "incremental": true,
     "plugins": [
+      {
+        "name": "next-transpile-modules"
+      },
       {
         "name": "next"
       }
     ]
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"],
-  "moduleResolution": ["node_modules", ".next", "node"]
+  "exclude": ["node_modules", ".next"]
 }

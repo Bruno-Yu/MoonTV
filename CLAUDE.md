@@ -122,3 +122,41 @@ When adding new video sources:
 - Docker deployment: Multi-stage builds with optimized images
 - Cloudflare Pages: Uses `pnpm pages:build` command
 - All deployments support environment variable configuration
+
+## Code Style Guidelines
+
+### Naming Conventions
+
+- **Components**: PascalCase (e.g., `VideoCard`, `EpisodeSelector`)
+- **Hooks**: camelCase with `use` prefix (e.g., `useLocalStorage`)
+- **Utils/Constants**: camelCase (e.g., `cleanHtmlTags`, `generateStorageKey`)
+- **Files**: kebab-case for non-component files (e.g., `db.client.ts`)
+- **API Routes**: kebab-case (e.g., `search/route.ts`, `playrecords/route.ts`)
+
+### Component Patterns
+
+- Use `'use client'` for client-side components
+- Use `export default function` for page components
+- Keep components focused - extract logic to custom hooks when >150 lines
+- Use TypeScript interfaces for props (not inline types)
+
+### API Response Patterns
+
+- Always return `{ data, error, message }` structure for consistency
+- Use `NextResponse.json()` for API routes
+- Handle errors with try/catch and proper error messages
+
+### CSS/Tailwind
+
+- Use `dark:` prefix for dark mode styles
+- Use `sm:`, `md:`, `lg:`, `xl:` for responsive breakpoints
+- Use semantic colors (e.g., `text-green-500` for primary actions)
+
+### Git Commit Messages
+
+Follow conventional commits:
+
+- `feat: add new video source`
+- `fix: resolve playback progress bug`
+- `refactor: extract common fetch logic`
+- `docs: update API documentation`

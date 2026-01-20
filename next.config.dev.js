@@ -4,14 +4,13 @@ const nextConfig = {
   eslint: {
     dirs: ['src'],
   },
-  
-  // 簡化配置
+
+  // 暫時關閉嚴格模式（可能導致啟動問題）
   reactStrictMode: false,
-  swcMinify: false,
+  swcMinify: true,
 
   images: {
-    // 啟用 Next.js 圖片優化
-    // 允許所有外部圖片域名（包括 TMDB、豆瓣等）
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -25,5 +24,11 @@ const nextConfig = {
   },
 };
 
-// 暫時禁用 PWA 以避免問題
-module.exports = nextConfig;
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  disable: process.env.NODE_ENV === 'development',
+  register: true,
+  skipWaiting: true,
+});
+
+module.exports = withPWA(nextConfig);

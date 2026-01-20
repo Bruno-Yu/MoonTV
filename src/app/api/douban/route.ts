@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 
 import { getCacheTime } from '@/lib/config';
 import { DoubanItem, DoubanResult } from '@/lib/types';
+import {
+  isDoubanImageUrl,
+  fetchAlternativePosterUrl,
+} from '@/lib/image-helper';
 
 interface DoubanApiResponse {
   subjects: Array<{
@@ -43,8 +47,6 @@ async function fetchDoubanData(url: string): Promise<DoubanApiResponse> {
     throw error;
   }
 }
-
-export const runtime = 'edge';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -94,6 +96,8 @@ export async function GET(request: Request) {
     // 调用豆瓣 API
     const doubanData = await fetchDoubanData(target);
 
+    console.log('🔍 豆瓣 API 返回數據量:', doubanData.subjects.length);
+
     // 转换数据格式
     const list: DoubanItem[] = doubanData.subjects.map((item) => ({
       id: item.id,
@@ -101,6 +105,37 @@ export async function GET(request: Request) {
       poster: item.cover,
       rate: item.rate,
     }));
+
+    // 批量替换海报
+    const doubanPosters = list.filter(
+      (item) => item.poster && isDoubanImageUrl(item.poster)
+    );
+
+    console.log('🎯 發現豆瓣海報數量:', doubanPosters.length);
+
+    if (doubanPosters.length > 0) {
+      const posterPromises = doubanPosters.map(async (item) => {
+        try {
+          const alternativeUrl = await fetchAlternativePosterUrl(item.title);
+          if (alternativeUrl) {
+            item.poster = alternativeUrl;
+            console.log('✅ 豆瓣海報替換成功:', {
+              title: item.title,
+              newUrl: alternativeUrl,
+            });
+          } else {
+            console.log('⚠️ 未找到替換:', item.title);
+          }
+        } catch (error) {
+          console.warn('❌ 豆瓣海報替換失敗:', {
+            title: item.title,
+            error,
+          });
+        }
+      });
+
+      await Promise.all(posterPromises);
+    }
 
     const response: DoubanResult = {
       code: 200,
@@ -125,7 +160,6 @@ export async function GET(request: Request) {
 function handleTop250(pageStart: number) {
   const target = `https://movie.douban.com/top250?start=${pageStart}&filter=`;
 
-  // 直接使用 fetch 获取 HTML 页面
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 10000);
 
@@ -148,10 +182,8 @@ function handleTop250(pageStart: number) {
         throw new Error(`HTTP error! Status: ${fetchResponse.status}`);
       }
 
-      // 获取 HTML 内容
       const html = await fetchResponse.text();
 
-      // 通过正则同时捕获影片 id、标题、封面以及评分
       const moviePattern =
         /<div class="item">[\s\S]*?<a[^>]+href="https?:\/\/movie\.douban\.com\/subject\/(\d+)\/"[\s\S]*?<img[^>]+alt="([^"]+)"[^>]*src="([^"]+)"[\s\S]*?<span class="rating_num"[^>]*>([^<]*)<\/span>[\s\S]*?<\/div>/g;
       const movies: DoubanItem[] = [];
@@ -163,7 +195,6 @@ function handleTop250(pageStart: number) {
         const cover = match[3];
         const rate = match[4] || '';
 
-        // 处理图片 URL，确保使用 HTTPS
         const processedCover = cover.replace(/^http:/, 'https:');
 
         movies.push({
@@ -172,6 +203,33 @@ function handleTop250(pageStart: number) {
           poster: processedCover,
           rate: rate,
         });
+      }
+
+      console.log('🔍 Top250 返回數據量:', movies.length);
+
+      const doubanMovies = movies.filter((m) => isDoubanImageUrl(m.poster));
+      console.log('🎯 Top250 豆瓣海報數量:', doubanMovies.length);
+
+      if (doubanMovies.length > 0) {
+        const posterPromises = doubanMovies.map(async (movie) => {
+          try {
+            const alternativeUrl = await fetchAlternativePosterUrl(movie.title);
+            if (alternativeUrl) {
+              movie.poster = alternativeUrl;
+              console.log('✅ Top250 海報替換成功:', {
+                title: movie.title,
+                newUrl: alternativeUrl,
+              });
+            }
+          } catch (error) {
+            console.warn('❌ Top250 海報替換失敗:', {
+              title: movie.title,
+              error,
+            });
+          }
+        });
+
+        await Promise.all(posterPromises);
       }
 
       const apiResponse: DoubanResult = {

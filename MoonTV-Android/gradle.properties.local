@@ -1,0 +1,11 @@
+# MoonTV Android 應用配置
+
+# MoonTV Web 應用 URL（開發/生產環境）
+# 使用反斜杠轉義引號
+MOONTV_URL=https://moontv.vercel.app
+
+# 本地開發環境（取消註釋以使用本地網址）
+# MOONTV_URL=http://192.168.1.100:3000
+
+# 其他配置（可選）
+# ENABLE_DEV_MODE=true

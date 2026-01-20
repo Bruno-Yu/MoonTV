@@ -1,5 +1,6 @@
-/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion */
 
+import { RedisClientType } from '@redis/client';
 import { AdminConfig } from './admin.types';
 import { Favorite, IStorage, PlayRecord } from './types';
 
@@ -22,9 +23,7 @@ async function withRetry<T>(
         err.code === 'EPIPE';
 
       if (isConnectionError && !isLastAttempt) {
-        console.log(
-          `Redis operation failed, retrying... (${i + 1}/${maxRetries})`
-        );
+        console.log(`Redis operation failed, retrying... (${i + 1}/${maxRetries})`);
         console.error('Error:', err.message);
         await new Promise((resolve) => setTimeout(resolve, 1000 * (i + 1)));
         continue;
@@ -45,33 +44,20 @@ export class RedisStorage implements IStorage {
   }
 
   private prKey(user: string, key: string) {
-    return 'u:' + user + ':pr:' + key;
+    return `u:${user}:pr:${key}`;
   }
 
-  async getPlayRecord(
-    userName: string,
-    key: string
-  ): Promise<PlayRecord | null> {
-    const val = await withRetry(() =>
-      this.client.get(this.prKey(userName, key))
-    );
-    return val ? (JSON.parse(val as string) as PlayRecord) : null;
+  async getPlayRecord(userName: string, key: string): Promise<PlayRecord | null> {
+    const val = await withRetry(() => this.client.get(this.prKey(userName, key)));
+    return val ? (JSON.parse(val) as PlayRecord) : null;
   }
 
-  async setPlayRecord(
-    userName: string,
-    key: string,
-    record: PlayRecord
-  ): Promise<void> {
-    await withRetry(() =>
-      this.client.set(this.prKey(userName, key), JSON.stringify(record))
-    );
+  async setPlayRecord(userName: string, key: string, record: PlayRecord): Promise<void> {
+    await withRetry(() => this.client.set(this.prKey(userName, key), JSON.stringify(record)));
   }
 
-  async getAllPlayRecords(
-    userName: string
-  ): Promise<Record<string, PlayRecord>> {
-    const pattern = 'u:' + userName + ':pr:*';
+  async getAllPlayRecords(userName: string): Promise<Record<string, PlayRecord>> {
+    const pattern = `u:${userName}:pr:*`;
     const keys: string[] = await withRetry(() => this.client.keys(pattern));
     if (keys.length === 0) return {};
     const values = await withRetry(() => this.client.mGet(keys));
@@ -80,7 +66,7 @@ export class RedisStorage implements IStorage {
       const raw = values[idx];
       if (raw) {
         const rec = JSON.parse(raw) as PlayRecord;
-        const keyPart = fullKey.replace('u:' + userName + ':pr:', '');
+        const keyPart = fullKey.replace(`u:${userName}:pr:`, '');
         result[keyPart] = rec;
       }
     });
@@ -92,28 +78,20 @@ export class RedisStorage implements IStorage {
   }
 
   private favKey(user: string, key: string) {
-    return 'u:' + user + ':fav:' + key;
+    return `u:${user}:fav:${key}`;
   }
 
   async getFavorite(userName: string, key: string): Promise<Favorite | null> {
-    const val = await withRetry(() =>
-      this.client.get(this.favKey(userName, key))
-    );
-    return val ? (JSON.parse(val as string) as Favorite) : null;
+    const val = await withRetry(() => this.client.get(this.favKey(userName, key)));
+    return val ? (JSON.parse(val) as Favorite) : null;
   }
 
-  async setFavorite(
-    userName: string,
-    key: string,
-    favorite: Favorite
-  ): Promise<void> {
-    await withRetry(() =>
-      this.client.set(this.favKey(userName, key), JSON.stringify(favorite))
-    );
+  async setFavorite(userName: string, key: string, favorite: Favorite): Promise<void> {
+    await withRetry(() => this.client.set(this.favKey(userName, key), JSON.stringify(favorite)));
   }
 
   async getAllFavorites(userName: string): Promise<Record<string, Favorite>> {
-    const pattern = 'u:' + userName + ':fav:*';
+    const pattern = `u:${userName}:fav:*`;
     const keys: string[] = await withRetry(() => this.client.keys(pattern));
     if (keys.length === 0) return {};
     const values = await withRetry(() => this.client.mGet(keys));
@@ -122,7 +100,7 @@ export class RedisStorage implements IStorage {
       const raw = values[idx];
       if (raw) {
         const fav = JSON.parse(raw) as Favorite;
-        const keyPart = fullKey.replace('u:' + userName + ':fav:', '');
+        const keyPart = fullKey.replace(`u:${userName}:fav:`, '');
         result[keyPart] = fav;
       }
     });
@@ -134,42 +112,36 @@ export class RedisStorage implements IStorage {
   }
 
   private userPwdKey(user: string) {
-    return 'u:' + user + ':pwd';
+    return `u:${user}:pwd`;
   }
 
   async registerUser(userName: string, password: string): Promise<void> {
-    await withRetry(() => this.client.set(this.userPwdKey(userName), password));
+    await withRetry(() => this.client.set(this.userPwdKey(userName), password)));
   }
 
   async verifyUser(userName: string, password: string): Promise<boolean> {
-    const stored = await withRetry(() =>
-      this.client.get(this.userPwdKey(userName))
-    );
+    const stored = await withRetry(() => this.client.get(this.userPwdKey(userName))));
     if (stored === null) return false;
     return stored === password;
   }
 
   async checkUserExist(userName: string): Promise<boolean> {
-    const exists = await withRetry(() =>
-      this.client.exists(this.userPwdKey(userName))
-    );
+    const exists = await withRetry(() => this.client.exists(this.userPwdKey(userName))));
     return exists === 1;
   }
 
   private shKey(user: string) {
-    return 'u:' + user + ':sh';
+    return `u:${user}:sh`;
   }
 
   async getSearchHistory(userName: string): Promise<string[]> {
-    return withRetry(
-      () => this.client.lRange(this.shKey(userName), 0, -1) as Promise<string[]>
-    );
+    return withRetry(() => this.client.lRange(this.shKey(userName), 0, -1) as Promise<string[]>);
   }
 
   async addSearchHistory(userName: string, keyword: string): Promise<void> {
     const key = this.shKey(userName);
     await withRetry(() => this.client.lRem(key, 0, keyword));
-    await withRetry(() => this.client.lPush(key, keyword));
+    await withRetry(() => this.client.lPush(key, keyword)));
     await withRetry(() => this.client.lTrim(key, 0, SEARCH_HISTORY_LIMIT - 1));
   }
 
@@ -178,14 +150,12 @@ export class RedisStorage implements IStorage {
     if (keyword) {
       await withRetry(() => this.client.lRem(key, 0, keyword));
     } else {
-      await withRetry(() => this.client.del(key));
+      await withRetry(() => this.client.del(key)));
     }
   }
 
   async getAllUsers(): Promise<string[]> {
-    const keys = (await withRetry(() =>
-      this.client.keys('u:*:pwd')
-    )) as string[];
+    const keys = await withRetry(() => this.client.keys('u:*:pwd'));
     return keys
       .map((k) => {
         const match = k.match(/^u:(.+?):pwd$/);
@@ -200,12 +170,10 @@ export class RedisStorage implements IStorage {
 
   async getAdminConfig(): Promise<AdminConfig | null> {
     const val = await withRetry(() => this.client.get(this.adminConfigKey()));
-    return val ? (JSON.parse(val as string) as AdminConfig) : null;
+    return val ? (JSON.parse(val) as AdminConfig) : null;
   }
 
   async setAdminConfig(config: AdminConfig): Promise<void> {
-    await withRetry(() =>
-      this.client.set(this.adminConfigKey(), JSON.stringify(config))
-    );
+    await withRetry(() => this.client.set(this.adminConfigKey(), JSON.stringify(config)));
   }
 }

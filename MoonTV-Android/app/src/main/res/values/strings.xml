@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">MoonTV</string>
+    <string name="loading">載入中...</string>
+    <string name="error_loading">載入失敗</string>
+</resources>
