@@ -7,6 +7,8 @@ import {
   fetchAlternativePosterUrl,
 } from '@/lib/image-helper';
 
+export const runtime = 'edge';
+
 interface DoubanApiResponse {
   subjects: Array<{
     id: string;
