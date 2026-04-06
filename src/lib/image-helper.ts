@@ -90,69 +90,191 @@ export function isDoubanImageUrl(url: string): boolean {
   return url.includes('doubanio.com');
 }
 
+// ---------------------------------------------------------------------------
+// TMDB poster search helpers
+// ---------------------------------------------------------------------------
+
+const TMDB_API_KEY =
+  process.env.TMDB_API_KEY || '2dca580c2a14b55200e784d157207b4d';
+const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+
 /**
- * 從 TMDB API 獲取替代的海報圖片 URL
+ * In-memory poster cache (Edge-compatible module-level Map).
+ * Key: `${cleanedTitle}:${year}`. Value: TMDB poster URL or '' on miss.
+ * Resets on cold start — acceptable for a best-effort cache.
+ */
+const posterCache = new Map<string, string>();
+const MAX_CACHE_SIZE = 200;
+
+function setCached(key: string, value: string): void {
+  if (posterCache.size >= MAX_CACHE_SIZE) {
+    // Evict oldest entry
+    const firstKey = posterCache.keys().next().value;
+    if (firstKey !== undefined) posterCache.delete(firstKey);
+  }
+  posterCache.set(key, value);
+}
+
+/**
+ * Clean a raw video title before submitting to TMDB.
+ * Removes year markers, episode markers, and enclosing brackets that degrade search precision.
+ */
+export function cleanTitleForSearch(title: string): string {
+  const cleaned = title
+    // Strip trailing (YYYY) or （YYYY）
+    .replace(/[（(]\d{4}[）)]/g, '')
+    // Strip episode markers: 第N集, EP01, E01
+    .replace(/第\d+集/g, '')
+    .replace(/[Ee][Pp]?\d+/g, '')
+    // Strip square/angle bracket content: [tag], 【tag】
+    .replace(/[【[][^\]】]*[】\]]/g, '')
+    // Strip full-width parenthesis sequences
+    .replace(/（[^）]*）/g, '')
+    // Collapse whitespace
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Fall back to original if cleaning produces empty string
+  return cleaned || title.trim();
+}
+
+/**
+ * Simple title similarity: common character overlap / max length (0–1).
+ * Case-insensitive, spaces stripped.
+ */
+export function titleSimilarity(a: string, b: string): number {
+  const normalise = (s: string) => s.toLowerCase().replace(/\s+/g, '');
+  const na = normalise(a);
+  const nb = normalise(b);
+  if (!na || !nb) return 0;
+
+  let common = 0;
+  const counted = new Set<number>();
+  for (const ch of na) {
+    const idx = nb.indexOf(ch);
+    if (idx !== -1 && !counted.has(idx)) {
+      common++;
+      counted.add(idx);
+    }
+  }
+  return common / Math.max(na.length, nb.length);
+}
+
+/**
+ * Pick the best TMDB result from a results array against the cleaned title.
+ * Returns the poster URL of the best result if similarity ≥ 0.5, otherwise ''.
+ */
+function pickBestPoster(
+  results: any[],
+  cleanedTitle: string
+): string {
+  let best = '';
+  let bestScore = 0;
+
+  for (const item of results) {
+    const candidateTitle: string =
+      item.title || item.name || item.original_title || item.original_name || '';
+    const score = titleSimilarity(cleanedTitle, candidateTitle);
+    if (score > bestScore) {
+      bestScore = score;
+      best = item.poster_path || item.backdrop_path || '';
+    }
+  }
+
+  if (bestScore < 0.5 || !best) return '';
+  return `https://image.tmdb.org/t/p/w500${best}`;
+}
+
+/**
+ * Query a single TMDB endpoint and return the best poster URL or ''.
+ */
+async function queryTmdbEndpoint(
+  endpoint: string,
+  params: Record<string, string>,
+  cleanedTitle: string,
+  signal: AbortSignal
+): Promise<string> {
+  const url = new URL(`${TMDB_BASE_URL}/${endpoint}`);
+  url.searchParams.set('api_key', TMDB_API_KEY);
+  url.searchParams.set('query', cleanedTitle);
+  url.searchParams.set('language', 'zh-CN');
+  url.searchParams.set('include_adult', 'false');
+  url.searchParams.set('page', '1');
+  for (const [k, v] of Object.entries(params)) {
+    if (v) url.searchParams.set(k, v);
+  }
+
+  const response = await fetch(url.toString(), { signal });
+  if (!response.ok) return '';
+
+  const data = await response.json();
+  if (!Array.isArray(data.results) || data.results.length === 0) return '';
+
+  return pickBestPoster(data.results, cleanedTitle);
+}
+
+/**
+ * 從 TMDB API 獲取替代的海報圖片 URL.
+ * Strategy: /search/movie → /search/tv → /search/multi (fallback without year).
+ * Results cached in module-level Map.
  */
 export async function fetchAlternativePosterUrl(
   title: string,
   year?: string
 ): Promise<string> {
+  const cleanedTitle = cleanTitleForSearch(title);
+  const cacheKey = `${cleanedTitle}:${year ?? ''}`;
+
+  // Cache hit
+  const cached = posterCache.get(cacheKey);
+  if (cached !== undefined) return cached;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+
   try {
-    console.log('🔍 獲取替代海報:', { title, year });
+    const yearParam = year ?? '';
 
-    const TMDB_API_KEY =
-      process.env.TMDB_API_KEY || '2dca580c2a14b55200e784d157207b4d';
-    const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-
-    const searchUrl = new URL(`${TMDB_BASE_URL}/search/multi`);
-    searchUrl.searchParams.append('api_key', TMDB_API_KEY);
-    searchUrl.searchParams.append('query', title);
-    searchUrl.searchParams.append('language', 'zh-TW');
-    if (year) {
-      searchUrl.searchParams.append('year', year);
+    // 1. Try /search/movie with year
+    const movieResult = await queryTmdbEndpoint(
+      'search/movie',
+      yearParam ? { year: yearParam } : {},
+      cleanedTitle,
+      controller.signal
+    );
+    if (movieResult) {
+      clearTimeout(timeoutId);
+      setCached(cacheKey, movieResult);
+      return movieResult;
     }
-    searchUrl.searchParams.append('include_adult', 'false');
-    searchUrl.searchParams.append('page', '1');
 
-    console.log('📡 TMDB 搜索 URL:', searchUrl.toString());
+    // 2. Try /search/tv with year
+    const tvResult = await queryTmdbEndpoint(
+      'search/tv',
+      yearParam ? { first_air_date_year: yearParam } : {},
+      cleanedTitle,
+      controller.signal
+    );
+    if (tvResult) {
+      clearTimeout(timeoutId);
+      setCached(cacheKey, tvResult);
+      return tvResult;
+    }
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-    const response = await fetch(searchUrl.toString(), {
-      signal: controller.signal,
-    });
-
+    // 3. Fallback: /search/multi without year
+    const multiResult = await queryTmdbEndpoint(
+      'search/multi',
+      {},
+      cleanedTitle,
+      controller.signal
+    );
     clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      console.warn('❌ TMDB API 請求失敗:', response.status);
-      return '';
-    }
-
-    const data = await response.json();
-
-    if (!data.results || data.results.length === 0) {
-      console.log('⚠️  TMDB 未找到結果:', { title, year });
-      return '';
-    }
-
-    const firstResult = data.results[0];
-    const posterPath = firstResult.poster_path || firstResult.backdrop_path;
-
-    if (!posterPath) {
-      console.log('⚠️  TMDB 結果沒有海報:', firstResult);
-      return '';
-    }
-
-    const resultUrl = `https://image.tmdb.org/t/p/w500${posterPath}`;
-    console.log('✅ TMDB 替換成功:', {
-      originalTitle: title,
-      newUrl: resultUrl,
-    });
-    return resultUrl;
+    setCached(cacheKey, multiResult);
+    return multiResult;
   } catch (error) {
+    clearTimeout(timeoutId);
     console.warn('❌ 獲取替代海報失敗:', { title, error });
+    setCached(cacheKey, '');
     return '';
   }
 }
@@ -170,23 +292,7 @@ export async function getPosterUrl(
     return posterUrl;
   }
 
-  console.log('🎯 檢測到豆瓣圖片:', {
-    posterUrl,
-    title,
-    year,
-  });
-
   const alternativeUrl = await fetchAlternativePosterUrl(title, year);
-
-  if (alternativeUrl) {
-    console.log('✅ 圖片已替換:', {
-      original: posterUrl,
-      replacement: alternativeUrl,
-    });
-  } else {
-    console.log('⚠️  未找到替代圖片，保留原始 URL');
-  }
-
   return alternativeUrl || posterUrl;
 }
 
