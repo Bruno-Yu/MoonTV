@@ -38,6 +38,23 @@ const nextConfig = {
     // Douban images are already routed through /api/image-proxy in VideoCard.
     unoptimized: true,
   },
+
+  /**
+   * Webpack alias: stub out @cloudflare/next-on-pages for non-Edge Runtime
+   * builds (e.g. the client bundle that includes admin/page.tsx via db.ts →
+   * d1.db.ts). This prevents the "server-only cannot be imported from a Client
+   * Component" build error while keeping the static import working correctly
+   * in Edge Runtime API routes at deploy time.
+   */
+  webpack: (config, { nextRuntime }) => {
+    if (nextRuntime !== 'edge') {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@cloudflare/next-on-pages': false,
+      };
+    }
+    return config;
+  },
 };
 
 // 暫時禁用 PWA 以避免問題
