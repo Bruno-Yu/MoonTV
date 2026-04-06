@@ -240,7 +240,9 @@ export default function VideoCard({
       {/* 海報容器 */}
       <div className='relative aspect-[2/3] overflow-hidden rounded-lg transition-all duration-300'>
         {/* 骨架屏 */}
-        {!isLoaded && !hasError && <ImagePlaceholder aspectRatio='aspect-[2/3]' />}
+        {!isLoaded && !hasError && (
+          <ImagePlaceholder aspectRatio='aspect-[2/3]' />
+        )}
 
         {/* 圖片載入失敗時的佔位符 */}
         {hasError && (
@@ -260,7 +262,7 @@ export default function VideoCard({
             onLoad={() => setIsLoaded(true)}
             onError={handleImageError}
             // 關鍵修復：移除 referrerPolicy，使用預設值
-            loading="lazy"
+            loading='lazy'
           />
         )}
 

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { db } from '@/lib/db';
+import { useEffect, useState } from 'react';
+
 import { AdminConfig } from '@/lib/admin.types';
+import { db } from '@/lib/db';
 
 export default function AdminPage() {
   const [config, setConfig] = useState<AdminConfig | null>(null);

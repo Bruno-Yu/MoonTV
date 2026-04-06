@@ -25,11 +25,13 @@ MoonTV-Android/
 ## 🔧 開發環境
 
 ### 必要工具
+
 - Android Studio Hedgehog 或更新版本
 - JDK 17 或更新版本
 - Android SDK API 34
 
 ### 安裝步驟
+
 ```bash
 # 1. 克隆專案
 git clone <repository-url>
@@ -48,6 +50,7 @@ adb devices
 ## 🎯 功能特性
 
 ### 遙控器支援
+
 - ✅ 方向鍵 (上下左右) - Focus 導航
 - ✅ 確認鍵 (OK) - 選擇/播放
 - ✅ 返回鍵 - 返回上一頁
@@ -55,6 +58,7 @@ adb devices
 - ✅ 語音鍵 - 語音搜索
 
 ### WebView 整合
+
 - ✅ 完整攔截遙控器事件
 - ✅ JavaScript ↔ Kotlin 橋接
 - ✅ 自動滾動 Focus 元素
@@ -63,18 +67,21 @@ adb devices
 ## 📱 構建與發布
 
 ### Debug 版本
+
 ```bash
 ./gradlew assembleDebug
 # 輸出: app/build/outputs/apk/debug/app-debug.apk
 ```
 
 ### Release 版本
+
 ```bash
 ./gradlew assembleRelease
 # 輸出: app/build/outputs/apk/release/app-release.apk
 ```
 
 ### 安裝到設備
+
 ```bash
 # Debug 版本
 adb install app-debug.apk
@@ -89,6 +96,7 @@ adb install app-release.apk
 ## 🔗 WebView Bridge API
 
 ### JavaScript 調用 Kotlin
+
 ```javascript
 // 分發按鍵事件
 window.AndroidTV.dispatchKeyEvent(19, 0); // UP key, ACTION_DOWN
@@ -101,6 +109,7 @@ const deviceInfo = JSON.parse(window.AndroidTV.getDeviceInfo());
 ```
 
 ### Kotlin 調用 JavaScript
+
 ```kotlin
 webView.evaluateJavascript("moveFocus('up')") { value ->
     // 處理結果
@@ -110,6 +119,7 @@ webView.evaluateJavascript("moveFocus('up')") { value ->
 ## 🧪 測試
 
 ### 遙控器測試
+
 ```bash
 # 模擬按鍵事件
 adb shell input keyevent 19  # DPAD_UP
@@ -120,6 +130,7 @@ adb shell input keyevent 23  # DPAD_CENTER
 ```
 
 ### 查看日誌
+
 ```bash
 adb logcat | grep "MoonTV"
 ```
@@ -127,12 +138,14 @@ adb logcat | grep "MoonTV"
 ## 📄 配置說明
 
 ### 修改 MoonTV 網址
+
 ```kotlin
 // MainActivity.kt
 loadUrl("https://your-moontv-url.com?tv=1")
 ```
 
 ### 修改 User Agent
+
 ```kotlin
 // MainActivity.kt
 settings.userAgentString = "MoonTV-AndroidTV/1.0 (Android TV)"
@@ -140,11 +153,11 @@ settings.userAgentString = "MoonTV-AndroidTV/1.0 (Android TV)"
 
 ## 🔐 權限說明
 
-| 權限 | 用途 |
-|-------|------|
-| INTERNET | 網絡訪問 |
-| ACCESS_NETWORK_STATE | 網絡狀態檢測 |
-| ACCESS_WIFI_STATE | WiFi 設備檢測 |
+| 權限                 | 用途          |
+| -------------------- | ------------- |
+| INTERNET             | 網絡訪問      |
+| ACCESS_NETWORK_STATE | 網絡狀態檢測  |
+| ACCESS_WIFI_STATE    | WiFi 設備檢測 |
 
 ## 📝 開發注意事項
 
@@ -156,6 +169,7 @@ settings.userAgentString = "MoonTV-AndroidTV/1.0 (Android TV)"
 ## 🚀 部署到 Chromecast
 
 ### 方式 1: USB 安裝
+
 ```bash
 # 1. 啟用開發者選項
 # 2. 啟用 USB 調試
@@ -165,11 +179,13 @@ adb install app-debug.apk
 ```
 
 ### 方式 2: Sideload (從網頁)
+
 1. 上傳 APK 到網頁
 2. 在 Chromecast 上開開網頁並下載
 3. 安裝 APK
 
 ### 方式 3: Android Studio 直接部署
+
 1. 連接設備
 2. 點擊 Run 按鈕
 3. 自動安裝並啟動

@@ -48,7 +48,7 @@ export interface DeviceInfo {
  */
 export function isAndroidTV(): boolean {
   if (typeof window === 'undefined') return false;
-  
+
   const userAgent = navigator.userAgent;
   return /Android TV|GoogleTV|WebView/.test(userAgent);
 }
@@ -82,14 +82,14 @@ export function initTVBridge() {
  */
 function mapJavaScriptKeyToAndroid(code: string): number | null {
   const mapping: Record<string, number> = {
-    'ArrowUp': AndroidKeyCode.DPAD_UP,
-    'ArrowDown': AndroidKeyCode.DPAD_DOWN,
-    'ArrowLeft': AndroidKeyCode.DPAD_LEFT,
-    'ArrowRight': AndroidKeyCode.DPAD_RIGHT,
-    'Enter': AndroidKeyCode.DPAD_CENTER,
+    ArrowUp: AndroidKeyCode.DPAD_UP,
+    ArrowDown: AndroidKeyCode.DPAD_DOWN,
+    ArrowLeft: AndroidKeyCode.DPAD_LEFT,
+    ArrowRight: AndroidKeyCode.DPAD_RIGHT,
+    Enter: AndroidKeyCode.DPAD_CENTER,
     ' ': AndroidKeyCode.DPAD_CENTER,
   };
-  
+
   return mapping[code] || null;
 }
 
@@ -104,7 +104,7 @@ export function mapAndroidKeyCodeToJS(keyCode: number): string | null {
     [AndroidKeyCode.DPAD_RIGHT]: 'ArrowRight',
     [AndroidKeyCode.DPAD_CENTER]: 'Enter',
   };
-  
+
   return mapping[keyCode] || null;
 }
 
@@ -113,7 +113,7 @@ export function mapAndroidKeyCodeToJS(keyCode: number): string | null {
  */
 export async function getDeviceInfo(): Promise<DeviceInfo | null> {
   if (!window.AndroidTV) return null;
-  
+
   try {
     const deviceInfoStr = window.AndroidTV.getDeviceInfo();
     return JSON.parse(deviceInfoStr) as DeviceInfo;

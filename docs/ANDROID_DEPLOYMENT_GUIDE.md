@@ -93,6 +93,7 @@ MoonTV/
 ### 1. Web 專案（Next.js）
 
 #### 啟動開發伺服器
+
 ```bash
 cd /Users/brunoyu/Desktop/學習/MoonTV
 pnpm dev
@@ -107,6 +108,7 @@ npm run dev
 #### 開發環境變量（可選）
 
 創建 `.env.local`（不提交到 Git）：
+
 ```env
 # 關閉密碼保護（開發時）
 PASSWORD=
@@ -126,6 +128,7 @@ ENABLE_REGISTER=true
 #### 啟用開發者選項（Android TV）
 
 1. **在 Android TV 上**：
+
    - 設定 > 系統 > 關於 > 連續點擊「Build Number」7 次
    - 進入開發者選項
    - 啟用「USB 調試」
@@ -186,6 +189,7 @@ adb devices
 ```
 
 輸出範例：
+
 ```
 List of devices attached
 192.168.1.100:5555    device    # 設備 A（Chromecast，WiFi 連接）
@@ -248,6 +252,7 @@ adb connect 192.168.1.100:5555
 #### 步驟
 
 **1. 確認網絡環境**
+
 ```bash
 # 確認 PC 和 Android TV 在同一 WiFi
 # Windows
@@ -259,17 +264,20 @@ ip addr
 ```
 
 **2. 在 Android TV 上啟用網絡調試**
+
 - 設定 > 網絡與網際網路 > 網絡調試 > 啟用
 - 記下顯示的調試端口（預設：`<IP>:5555`）
 
 **3. 在 PC Chrome 中連接**
 
 選項 A：直接訪問
+
 ```
 http://192.168.1.100:5555
 ```
 
 選項 B：使用 Chrome DevTools
+
 ```
 1. 打開 Chrome
 2. 訪問：chrome://inspect
@@ -278,6 +286,7 @@ http://192.168.1.100:5555
 ```
 
 **4. 開始調試**
+
 - 在 Chrome DevTools 的 Console 查看日誌
 - 在 Elements 檢查 DOM
 - 在 Network 查看網絡請求
@@ -288,18 +297,21 @@ http://192.168.1.100:5555
 #### 步驟
 
 **1. 連接設備**
+
 ```bash
 # 啟用 USB 調試後連接
 adb devices
 ```
 
 **2. 檢查連接**
+
 ```bash
 adb devices -l
 # 應該看到設備 ID
 ```
 
 **3. Chrome 連接**
+
 ```
 1. 打開 chrome://inspect
 2. 找到設備（顯示為序列號）
@@ -309,6 +321,7 @@ adb devices -l
 ### 調試技巧
 
 #### 查看 Android 日誌
+
 ```bash
 # 過濾 MoonTV 相關日誌
 adb logcat | grep "MoonTV\|WebView\|Chrome\|moontv"
@@ -344,6 +357,7 @@ Log.e("MoonTV", "Error: ${error.message}")
 #### 網絡請求調試
 
 在 Chrome DevTools 的 Network 標籤：
+
 1. 篩選：`douban` 或 `api` 或 `tmdb`
 2. 檢查 Request URL
 3. 檢查 Response 狀態碼
@@ -400,6 +414,7 @@ cd MoonTV-Android
 #### 分發 APK
 
 **方式 A：直接安裝**
+
 ```bash
 # 連接設備
 adb connect <chromecast-ip>:5555
@@ -409,6 +424,7 @@ adb install app/build/outputs/apk/release/app-release.apk
 ```
 
 **方式 B：Google Play 商店（未來）**
+
 ```bash
 # 1. 創建簽名配置
 # 在 Android Studio：Build > Generate Signed Bundle/APK
@@ -420,6 +436,7 @@ adb install app/build/outputs/apk/release/app-release.apk
 ```
 
 **方式 C：GitHub Release（測試版）**
+
 ```bash
 # 1. 創建 GitHub Release
 gh release create v1.0.0 \
@@ -438,13 +455,13 @@ gh release create v1.0.0 \
 
 #### 1. 環境變量
 
-| 變數 | 說明 | 部署值 |
-|------|------|----------|
-| `PASSWORD` | 全站密碼保護 | **生產必須設置** |
-| `NEXT_PUBLIC_STORAGE_TYPE` | 存儲類型 | `localstorage` 或 `redis` |
-| `TMDB_API_KEY` | TMDB API 密鑰 | 建議申請自己的 |
-| `NEXT_PUBLIC_SITE_NAME` | 網站名稱 | `MoonTV` |
-| `NEXT_PUBLIC_ANNOUNCEMENT` | 公告內容 | 可選 |
+| 變數                       | 說明          | 部署值                    |
+| -------------------------- | ------------- | ------------------------- |
+| `PASSWORD`                 | 全站密碼保護  | **生產必須設置**          |
+| `NEXT_PUBLIC_STORAGE_TYPE` | 存儲類型      | `localstorage` 或 `redis` |
+| `TMDB_API_KEY`             | TMDB API 密鑰 | 建議申請自己的            |
+| `NEXT_PUBLIC_SITE_NAME`    | 網站名稱      | `MoonTV`                  |
+| `NEXT_PUBLIC_ANNOUNCEMENT` | 公告內容      | 可選                      |
 
 #### 2. 配置文件檢查
 
@@ -480,33 +497,37 @@ android {
 
 **文件**：`MoonTV-Android/app/src/main/java/com/moontv/android/MainActivity.kt`
 
-**方式**：使用 BuildConfig 配置（推薦✅）
+**方式**：使用 BuildConfig 配置（推薦 ✅）
 
 ```kotlin
 // 第 78 行已自動從 build.gradle.kts 讀取
 loadUrl("${BuildConfig.MOONTV_URL}?tv=1")
 ```
 
-**配置 URL（三種方式，詳見 [URL_CONFIG_GUIDE.md](../MoonTV-Android/URL_CONFIG_GUIDE.md)）：
+\*\*配置 URL（三種方式，詳見 [URL_CONFIG_GUIDE.md](../MoonTV-Android/URL_CONFIG_GUIDE.md)）：
 
 **方式 A：全局配置（所有開發者）**
+
 ```properties
 # MoonTV-Android/gradle.properties
 MOONTV_URL=https://moontv.vercel.app
 ```
 
 **方式 B：本地開發配置（推薦）**
+
 ```properties
 # MoonTV-Android/gradle.properties.local（不會被 Git 追蹤）
 MOONTV_URL=http://192.168.1.100:3000
 ```
 
 **方式 C：命令行臨時指定（測試用）**
+
 ```bash
 ./gradlew assembleDebug -PMOONTV_URL=http://192.168.1.100:3000
 ```
 
 **優先級**：
+
 1. 命令行參數（最高）
 2. `gradle.properties.local`（本地開發）
 3. `gradle.properties`（全局配置）
@@ -516,7 +537,7 @@ MOONTV_URL=http://192.168.1.100:3000
 
 **文件**：`MoonTV-Android/app/src/main/java/com/moontv/android/MainActivity.kt`
 
-**方式**：使用 BuildConfig 配置（推薦✅）
+**方式**：使用 BuildConfig 配置（推薦 ✅）
 
 ```kotlin
 // 第 78 行已自動從 build.gradle.kts 讀取
@@ -526,18 +547,21 @@ loadUrl("${BuildConfig.MOONTV_URL}?tv=1")
 **配置 URL**（三種方式）：
 
 **方式 A：修改 gradle.properties（全局生效）**
+
 ```properties
 # MoonTV-Android/gradle.properties
 MOONTV_URL=https://moontv.vercel.app
 ```
 
 **方式 B：使用本地配置文件（開發用，不提交到 Git）**
+
 ```properties
 # MoonTV-Android/gradle.properties.local
 MOONTV_URL=http://192.168.1.100:3000
 ```
 
 **方式 C：通過命令行臨時指定**
+
 ```bash
 cd MoonTV-Android
 ./gradlew assembleDebug -PMOONTV_URL=http://192.168.1.100:3000
@@ -568,6 +592,7 @@ signingConfigs {
 #### 4. 開發者選項關閉
 
 **檢查清單**：
+
 - [ ] 禁用 `WebView.setWebContentsDebuggingEnabled(true)`
 - [ ] 移除測試 `loadUrl`（改為正式網址）
 - [ ] 檢查無 `console.log` 遺留（生產環境）
@@ -580,6 +605,7 @@ signingConfigs {
 ### Web 專案常見問題
 
 #### 問題 1：API 請求失敗
+
 ```bash
 # 檢查 API 可用性
 curl https://api.themoviedb.org/3/search/multi?api_key=xxx&query=test
@@ -595,6 +621,7 @@ curl https://api.themoviedb.org/3/search/multi?api_key=xxx&query=test
 **症狀**：圖片顯示空白或錯誤圖示
 
 **檢查步驟**：
+
 ```bash
 # 1. 檢查 API 日誌（在瀏覽器 Console 查看）
 # 應該看到：
@@ -610,6 +637,7 @@ curl https://api.themoviedb.org/3/search/multi?api_key=xxx&query=test
 ```
 
 **解決方案**：
+
 ```javascript
 // 確保 next.config.js 配置正確
 images: {
@@ -625,6 +653,7 @@ images: {
 **症狀**：方向鍵無法控制 Focus
 
 **檢查步驟**：
+
 ```bash
 # 1. 檢查 URL 是否包含 ?tv=1
 http://localhost:3000?tv=1
@@ -729,16 +758,19 @@ git push origin main
 ## 📚 參考資源
 
 ### Web 開發
+
 - [Next.js 文檔](https://nextjs.org/docs)
 - [Next.js Image 組件](https://nextjs.org/docs/api-reference/next/image)
 - [React 文檔](https://react.dev)
 
 ### Android 開發
+
 - [Android TV 開發指南](https://developer.android.com/training/tv)
 - [WebView 文檔](https://developer.android.com/guide/webapps/webview)
 - [ADB 文檔](https://developer.android.com/studio/command-line/adb)
 
 ### 調試工具
+
 - [Chrome DevTools](https://developer.chrome.com/docs/devtools)
 - [ADB 快速參考](https://developer.android.com/studio/command-line/adb)
 
@@ -747,6 +779,7 @@ git push origin main
 ## 📝 部署檢查清單（最終版）
 
 ### Web 專案
+
 - [ ] 所有功能在本地測試通過
 - [ ] 圖片優化功能啟用（`unoptimized: false`）
 - [ ] 豆瓣圖片替換功能正常
@@ -757,6 +790,7 @@ git push origin main
 - [ ] 生產環境測試通過
 
 ### Android App
+
 - [ ] 載入網址更新為正式 URL
 - [ ] 版本號更新（versionCode 和 versionName）
 - [ ] Debug 選項已關閉

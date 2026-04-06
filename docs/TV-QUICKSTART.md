@@ -9,6 +9,7 @@ MoonTV TV 模式允許你在 Chromecast with Google TV (第 2 代) 和其他 And
 ### 步驟 1: 準備 Android 設備
 
 1. **Chromecast with Google TV (第 2 代)**
+
    - 啟用開發者選項
    - 啟用 USB 調試
    - 連接電腦和電視
@@ -20,6 +21,7 @@ MoonTV TV 模式允許你在 Chromecast with Google TV (第 2 代) 和其他 And
 ### 步驟 2: 安裝 MoonTV App
 
 **選項 A: 從電腦安裝（推薦）**
+
 ```bash
 cd MoonTV-Android
 
@@ -31,11 +33,13 @@ cd MoonTV-Android
 ```
 
 **選項 B: 下載 APK 直接安裝**
+
 1. 下载 `app-debug.apk` 到電視
 2. 打開 APK 文件
 3. 允許安裝來自未知來源的應用
 
 **選項 C: 用 Android Studio**
+
 1. 用 Android Studio 打開 `MoonTV-Android` 專案
 2. 連接 Android 設備
 3. 點擊 Run 按鈕
@@ -50,25 +54,26 @@ cd MoonTV-Android
 
 ### 基礎操作
 
-| 按鍵 | 功能 |
-|-------|------|
-| ◀ ▶ | 左右移動 Focus |
-| ▲ ▼ | 上下移動 Focus |
-| ⏎ (確認) | 選擇/播放 |
-| ◀◀ (返回) | 返回上一頁 |
+| 按鍵      | 功能           |
+| --------- | -------------- |
+| ◀ ▶       | 左右移動 Focus |
+| ▲ ▼       | 上下移動 Focus |
+| ⏎ (確認)  | 選擇/播放      |
+| ◀◀ (返回) | 返回上一頁     |
 
 ### 快捷功能
 
-| 按鍵 | 功能 |
-|-------|------|
-| 首頁鍵 | 返回首頁 |
-| 語音鍵 | 語音搜索（開發中） |
+| 按鍵    | 功能               |
+| ------- | ------------------ |
+| 首頁鍵  | 返回首頁           |
+| 語音鍵  | 語音搜索（開發中） |
 | Netflix | 快捷導航到 Netflix |
 | YouTube | 快捷導航到 YouTube |
 
 ## 📱 主要功能
 
 ### 1. 首頁 Grid 佈局
+
 - **繼續觀看** - 從上次播放位置繼續
 - **熱門電影** - 最新熱門電影
 - **熱門劇集** - 最新熱門劇集
@@ -77,11 +82,13 @@ cd MoonTV-Android
 - **搜尋** - 搜索你想要的內容
 
 ### 2. 搜尋功能
+
 - 虛擬數字鍵盤輸入
 - 語音搜索（開發中）
 - 搜索結果分頁顯示
 
 ### 3. 精簡導航
+
 只有 6 個主要功能，用遙控器快速切換！
 
 ## 🔧 自定義設置
@@ -96,6 +103,7 @@ loadUrl("https://your-moontv-url.com?tv=1")
 ```
 
 然後重新構建：
+
 ```bash
 ./gradlew assembleDebug
 ./gradlew installDebug
@@ -111,6 +119,7 @@ settings.userAgentString = "MoonTV-AndroidTV/1.0 (Android TV)"
 ## 🧪 測試你的安裝
 
 ### 測試遙控器
+
 ```bash
 # 連接到電視
 adb connect <TV-IP>:5555
@@ -122,11 +131,13 @@ adb shell input keyevent 23  # 確認
 ```
 
 ### 查看日誌
+
 ```bash
 adb logcat | grep "MoonTV"
 ```
 
 ### 在電腦瀏覽器測試
+
 ```
 http://localhost:3000?tv=1
 ```
@@ -134,21 +145,27 @@ http://localhost:3000?tv=1
 ## ❓ 常見問題
 
 ### Q: 遙控器無法控制？
-**A**: 
+
+**A**:
+
 1. 確認 App 已經啟動
 2. 檢查遙控器電量
 3. 重新連接藍牙遙控器
 4. 重啟 App
 
 ### Q: 畫面顯示空白？
+
 **A**:
+
 1. 檢查網絡連接
 2. 確認 MoonTV 網址正確
 3. 查看 Android 設置中的網絡權限
 4. 清除 App 緩存並重啟
 
 ### Q: 如何更新 App？
+
 **A**:
+
 ```bash
 cd MoonTV-Android
 git pull
@@ -157,14 +174,17 @@ git pull
 ```
 
 ### Q: 可以播放 4K 視頻嗎？
+
 **A**: 可以！Chromecast with Google TV (第 2 代) 支援 4K HDR 視頻播放。
 
 ### Q: 支援字幕嗎？
+
 **A**: 支援！在播放頁面可以選擇字幕語言。
 
 ## 🎨 Focus 視覺效果
 
 被選中的元素會有：
+
 - 🟢 **綠色外框** - 清晰標示當前選擇
 - 📏 **放大效果** - 元素放大 5%
 - 🌑 **陰影** - 提升視覺層次
@@ -172,14 +192,17 @@ git pull
 ## 🚀 進階功能
 
 ### 鍵盤快捷鍵（在電腦上測試）
+
 - 方向鍵 - 移動 Focus
 - Enter - 確認
 - Esc - 返回
 
 ### 語音搜索（開發中）
+
 按語音鍵並說出你想要搜索的內容。
 
 ### 深色模式
+
 自動根據系統設置切換深色/淺色主題。
 
 ## 📞 需要幫助？

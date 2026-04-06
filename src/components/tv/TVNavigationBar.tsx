@@ -17,12 +17,12 @@ export function TVNavigationBar({ items }: TVNavigationBarProps) {
   const { focusedId, setFocus } = useTVFocus();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t dark:border-gray-700 z-50">
-      <div className="flex justify-around py-2">
+    <nav className='fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t dark:border-gray-700 z-50'>
+      <div className='flex justify-around py-2'>
         {items.map((item, index) => (
           <button
             key={item.id}
-            data-tv-focusable="true"
+            data-tv-focusable='true'
             data-tv-focus-id={`nav-${item.id}`}
             onClick={() => {
               setFocus(`nav-${item.id}`);
@@ -35,8 +35,8 @@ export function TVNavigationBar({ items }: TVNavigationBarProps) {
             }`}
             style={{ minWidth: '100px' }}
           >
-            <span className="text-2xl mb-1">{item.icon}</span>
-            <span className="text-sm font-medium">{item.label}</span>
+            <span className='text-2xl mb-1'>{item.icon}</span>
+            <span className='text-sm font-medium'>{item.label}</span>
           </button>
         ))}
       </div>

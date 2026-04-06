@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+
 import { useTVFocus } from './TVFocusContext';
 
 interface TVFocusableCardProps {
@@ -14,15 +15,15 @@ interface TVFocusableCardProps {
   focusStyle?: string;
 }
 
-export function TVFocusableCard({ 
-  id, 
-  children, 
-  onEnter, 
+export function TVFocusableCard({
+  id,
+  children,
+  onEnter,
   className = '',
   row,
   col,
   parentRow,
-  focusStyle = 'ring-4 ring-green-500 ring-offset-2 dark:ring-offset-black scale-105 z-10'
+  focusStyle = 'ring-4 ring-green-500 ring-offset-2 dark:ring-offset-black scale-105 z-10',
 }: TVFocusableCardProps) {
   const ref = useRef<HTMLDivElement>(null);
   const { focusedId, setFocus } = useTVFocus();
@@ -48,7 +49,7 @@ export function TVFocusableCard({
         onEnter?.();
       }}
       tabIndex={0}
-      data-tv-focusable="true"
+      data-tv-focusable='true'
       data-tv-focus-id={id}
     >
       {children}

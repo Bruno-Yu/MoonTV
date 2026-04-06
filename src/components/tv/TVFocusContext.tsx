@@ -1,6 +1,13 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
 interface TVFocusItem {
   id: string;
@@ -30,9 +37,13 @@ export function TVFocusProvider({ children }: { children: React.ReactNode }) {
 
   const registerItem = useCallback((item: TVFocusItem) => {
     itemsRef.current.set(item.id, item);
-    
+
     // 建立 row-col 索引
-    if (item.row !== undefined && item.col !== undefined && item.parentRow !== undefined) {
+    if (
+      item.row !== undefined &&
+      item.col !== undefined &&
+      item.parentRow !== undefined
+    ) {
       const parentKey = item.parentRow;
       if (!rowColMap.current.has(parentKey)) {
         rowColMap.current.set(parentKey, new Map());
@@ -44,7 +55,12 @@ export function TVFocusProvider({ children }: { children: React.ReactNode }) {
 
   const unregisterItem = useCallback((id: string) => {
     const item = itemsRef.current.get(id);
-    if (item && item.row !== undefined && item.col !== undefined && item.parentRow !== undefined) {
+    if (
+      item &&
+      item.row !== undefined &&
+      item.col !== undefined &&
+      item.parentRow !== undefined
+    ) {
       const parentKey = item.parentRow;
       const rowMap = rowColMap.current.get(parentKey);
       if (rowMap) {
@@ -58,51 +74,76 @@ export function TVFocusProvider({ children }: { children: React.ReactNode }) {
     setFocusedId(id);
     const item = itemsRef.current.get(id);
     if (item?.ref.current) {
-      item.ref.current.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+      item.ref.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'center',
+      });
       item.ref.current.focus();
     }
   }, []);
 
-  const moveFocus = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
-    const current = itemsRef.current.get(focusedId || '');
-    if (!current || (current.row === undefined || current.col === undefined)) {
-      // 如果沒有 row/col，用 DOM 順序
-      const allItems = Array.from(itemsRef.current.values());
-      const currentIndex = allItems.findIndex(item => item.id === focusedId);
-      let nextIndex = currentIndex;
-      
+  const moveFocus = useCallback(
+    (direction: 'up' | 'down' | 'left' | 'right') => {
+      const current = itemsRef.current.get(focusedId || '');
+      if (!current || current.row === undefined || current.col === undefined) {
+        // 如果沒有 row/col，用 DOM 順序
+        const allItems = Array.from(itemsRef.current.values());
+        const currentIndex = allItems.findIndex(
+          (item) => item.id === focusedId
+        );
+        let nextIndex = currentIndex;
+
+        switch (direction) {
+          case 'down':
+            nextIndex = (currentIndex + 1) % allItems.length;
+            break;
+          case 'up':
+            nextIndex = (currentIndex - 1 + allItems.length) % allItems.length;
+            break;
+          case 'right':
+            nextIndex = Math.min(currentIndex + 1, allItems.length - 1);
+            break;
+          case 'left':
+            nextIndex = Math.max(currentIndex - 1, 0);
+            break;
+        }
+
+        if (nextIndex >= 0 && nextIndex < allItems.length) {
+          setFocus(allItems[nextIndex].id);
+        }
+        return;
+      }
+
+      const parentKey = current.parentRow || 0;
+      const rowMap = rowColMap.current.get(parentKey);
+      if (!rowMap) return;
+
+      let nextRow = current.row;
+      let nextCol = current.col;
+
       switch (direction) {
-        case 'down': nextIndex = (currentIndex + 1) % allItems.length; break;
-        case 'up': nextIndex = (currentIndex - 1 + allItems.length) % allItems.length; break;
-        case 'right': nextIndex = Math.min(currentIndex + 1, allItems.length - 1); break;
-        case 'left': nextIndex = Math.max(currentIndex - 1, 0); break;
+        case 'up':
+          nextRow--;
+          break;
+        case 'down':
+          nextRow++;
+          break;
+        case 'left':
+          nextCol--;
+          break;
+        case 'right':
+          nextCol++;
+          break;
       }
-      
-      if (nextIndex >= 0 && nextIndex < allItems.length) {
-        setFocus(allItems[nextIndex].id);
+
+      const nextItem = rowMap.get(`${nextRow},${nextCol}`);
+      if (nextItem) {
+        setFocus(nextItem.id);
       }
-      return;
-    }
-
-    const parentKey = current.parentRow || 0;
-    const rowMap = rowColMap.current.get(parentKey);
-    if (!rowMap) return;
-
-    let nextRow = current.row;
-    let nextCol = current.col;
-
-    switch (direction) {
-      case 'up': nextRow--; break;
-      case 'down': nextRow++; break;
-      case 'left': nextCol--; break;
-      case 'right': nextCol++; break;
-    }
-
-    const nextItem = rowMap.get(`${nextRow},${nextCol}`);
-    if (nextItem) {
-      setFocus(nextItem.id);
-    }
-  }, [focusedId, setFocus]);
+    },
+    [focusedId, setFocus]
+  );
 
   const pressEnter = useCallback(() => {
     const item = itemsRef.current.get(focusedId || '');
@@ -117,11 +158,25 @@ export function TVFocusProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.key) {
-        case 'ArrowUp': moveFocus('up'); e.preventDefault(); break;
-        case 'ArrowDown': moveFocus('down'); e.preventDefault(); break;
-        case 'ArrowLeft': moveFocus('left'); e.preventDefault(); break;
-        case 'ArrowRight': moveFocus('right'); e.preventDefault(); break;
-        case 'Enter': pressEnter(); break;
+        case 'ArrowUp':
+          moveFocus('up');
+          e.preventDefault();
+          break;
+        case 'ArrowDown':
+          moveFocus('down');
+          e.preventDefault();
+          break;
+        case 'ArrowLeft':
+          moveFocus('left');
+          e.preventDefault();
+          break;
+        case 'ArrowRight':
+          moveFocus('right');
+          e.preventDefault();
+          break;
+        case 'Enter':
+          pressEnter();
+          break;
       }
     };
 
@@ -130,7 +185,17 @@ export function TVFocusProvider({ children }: { children: React.ReactNode }) {
   }, [moveFocus, pressEnter]);
 
   return (
-    <TVFocusContext.Provider value={{ focusedId, setFocus, registerItem, unregisterItem, moveFocus, pressEnter, getFocusedItem }}>
+    <TVFocusContext.Provider
+      value={{
+        focusedId,
+        setFocus,
+        registerItem,
+        unregisterItem,
+        moveFocus,
+        pressEnter,
+        getFocusedItem,
+      }}
+    >
       {children}
     </TVFocusContext.Provider>
   );
@@ -138,6 +203,7 @@ export function TVFocusProvider({ children }: { children: React.ReactNode }) {
 
 export const useTVFocus = () => {
   const context = useContext(TVFocusContext);
-  if (!context) throw new Error('useTVFocus must be used within TVFocusProvider');
+  if (!context)
+    throw new Error('useTVFocus must be used within TVFocusProvider');
   return context;
 };

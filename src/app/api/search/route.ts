@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+
 import { getAvailableApiSites, getCacheTime } from '@/lib/config';
 import { searchFromApi } from '@/lib/downstream';
 

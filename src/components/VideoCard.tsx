@@ -93,7 +93,11 @@ export default function VideoCard({
   }, [isAggregate, items]);
 
   const actualTitle = aggregateData?.first.title ?? title;
-  const actualPoster = aggregateData?.first.poster ?? poster;
+  const rawPoster = aggregateData?.first.poster ?? poster;
+  const isDoubanPoster = rawPoster ? rawPoster.includes('doubanio.com') : false;
+  const actualPoster = isDoubanPoster
+    ? `/api/image-proxy?url=${encodeURIComponent(rawPoster)}`
+    : rawPoster;
   const actualSource = aggregateData?.first.source ?? source;
   const actualId = aggregateData?.first.id ?? id;
   const actualDoubanId = String(
@@ -236,17 +240,29 @@ export default function VideoCard({
         {!isLoaded && <ImagePlaceholder aspectRatio='aspect-[2/3]' />}
 
         {/* 图片加载动画 */}
-        <Image
-          src={actualPoster}
-          alt={actualTitle}
-          fill
-          className={`object-cover transition-all duration-700 ease-out ${
-            isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95 blur-sm'
-          } group-hover:scale-105`}
-          onLoadingComplete={() => setIsLoaded(true)}
-          referrerPolicy='no-referrer'
-          priority={false}
-        />
+        {isDoubanPoster ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={actualPoster}
+            alt={actualTitle}
+            className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out ${
+              isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95 blur-sm'
+            } group-hover:scale-105`}
+            onLoad={() => setIsLoaded(true)}
+          />
+        ) : (
+          <Image
+            src={actualPoster}
+            alt={actualTitle}
+            fill
+            className={`object-cover transition-all duration-700 ease-out ${
+              isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95 blur-sm'
+            } group-hover:scale-105`}
+            onLoadingComplete={() => setIsLoaded(true)}
+            referrerPolicy='no-referrer'
+            priority={false}
+          />
+        )}
 
         {/* 悬浮层 - 添加渐变动画效果 */}
         <div className='absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center'>

@@ -42,3 +42,9 @@ sitemap-*.xml
 
 # build triggers
 .last-build-time
+
+# Claude Code internal directory
+.claude/
+
+# session notes
+session-*.md

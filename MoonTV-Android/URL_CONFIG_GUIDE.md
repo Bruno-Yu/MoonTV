@@ -16,6 +16,7 @@ MOONTV_URL=https://moontv.vercel.app
 ```
 
 **使用場景**：
+
 - ✅ 團隊開發（所有成員使用同一配置）
 - ✅ 正式部署
 - ⚠️ 會被 Git 追蹤
@@ -32,11 +33,13 @@ MOONTV_URL=http://192.168.1.100:3000
 ```
 
 **使用場景**：
+
 - ✅ 個人開發（不影響他人）
 - ✅ 本地測試
 - ✅ 已在 `.gitignore` 中（自動忽略）
 
 **切換方式**：
+
 ```bash
 # 開發時
 cp gradle.properties.local.example gradle.properties.local
@@ -61,6 +64,7 @@ cd MoonTV-Android
 ```
 
 **使用場景**：
+
 - ✅ CI/CD 流水線
 - ✅ 快速測試不同環境
 - ✅ 不修改任何文件
@@ -71,12 +75,12 @@ cd MoonTV-Android
 
 Gradle 按以下優先級讀取配置：
 
-| 優先級 | 配置位置 | 說明 |
-|--------|----------|------|
-| **1 (最高)** | 命令行參數 | `-PMOONTV_URL=...` |
-| **2** | `gradle.properties.local` | 本地開發配置 |
-| **3** | `gradle.properties` | 項目級別配置 |
-| **4 (最低)** | `build.gradle.kts` defaultConfig | 代碼中的默認值 |
+| 優先級       | 配置位置                         | 說明               |
+| ------------ | -------------------------------- | ------------------ |
+| **1 (最高)** | 命令行參數                       | `-PMOONTV_URL=...` |
+| **2**        | `gradle.properties.local`        | 本地開發配置       |
+| **3**        | `gradle.properties`              | 項目級別配置       |
+| **4 (最低)** | `build.gradle.kts` defaultConfig | 代碼中的默認值     |
 
 ---
 
@@ -154,18 +158,19 @@ adb shell am start -n com.moontv.android/.MainActivity
 
 ## 📝 配置文件說明
 
-| 文件 | 用途 | Git 追蹤 |
-|------|------|-----------|
-| `gradle.properties` | 全局配置，默認線上環境 | ✅ 是 |
-| `gradle.properties.local` | 個人開發配置 | ❌ 否（.gitignore） |
-| `gradle.properties.local.example` | 配置範本 | ✅ 是（供參考） |
-| `build.gradle.kts` | 默認值配置 | ✅ 是 |
+| 文件                              | 用途                   | Git 追蹤            |
+| --------------------------------- | ---------------------- | ------------------- |
+| `gradle.properties`               | 全局配置，默認線上環境 | ✅ 是               |
+| `gradle.properties.local`         | 個人開發配置           | ❌ 否（.gitignore） |
+| `gradle.properties.local.example` | 配置範本               | ✅ 是（供參考）     |
+| `build.gradle.kts`                | 默認值配置             | ✅ 是               |
 
 ---
 
 ## ⚠️ 重要提示
 
 1. **不要提交敏感信息**：
+
    ```bash
    # ✅ 正確
    gradle.properties.local
@@ -177,12 +182,14 @@ adb shell am start -n com.moontv.android/.MainActivity
    ```
 
 2. **構建後驗證配置**：
+
    ```bash
    # 檢查 APK 中嵌入的值
    aapt dump badging app/build/outputs/apk/debug/app-debug.apk | grep MOONTV_URL
    ```
 
 3. **使用相對路徑**（開發時）：
+
    ```properties
    # ✅ 正確（同一局域網）
    MOONTV_URL=http://192.168.1.100:3000
@@ -200,6 +207,7 @@ adb shell am start -n com.moontv.android/.MainActivity
 **原因**：使用緩存或未重新構建
 
 **解決**：
+
 ```bash
 cd MoonTV-Android
 ./gradlew clean
@@ -211,6 +219,7 @@ cd MoonTV-Android
 **原因**：.local 文件優先級問題
 
 **檢查步驟**：
+
 ```bash
 # 1. 確認文件存在
 ls -la MoonTV-Android/gradle.properties.local
@@ -225,6 +234,7 @@ cat MoonTV-Android/gradle.properties.local
 ### 問題：多設備安裝到錯誤環境
 
 **解決**：
+
 ```bash
 # 1. 先連接目標設備
 adb connect <target-ip>:5555

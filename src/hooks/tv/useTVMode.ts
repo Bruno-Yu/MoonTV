@@ -13,16 +13,16 @@ export function useTVMode() {
       if (urlParams.get('tv') === '1') {
         return true;
       }
-      
+
       // 2. 檢查 User Agent
       const userAgent = navigator.userAgent;
       const isAndroidTV = /Android TV|GoogleTV|SmartTV/.test(userAgent);
-      
+
       // 3. 檢查是否有 AndroidTV bridge
       if ((window as any).AndroidTV) {
         return true;
       }
-      
+
       return isAndroidTV;
     };
 

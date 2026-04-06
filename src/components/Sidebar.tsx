@@ -16,7 +16,8 @@ import {
   Star,
   Swords,
   Tv,
-  VenetianMask} from 'lucide-react';
+  VenetianMask,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -173,7 +174,6 @@ const Sidebar = ({ onToggle, activePath = '/' }: SidebarProps) => {
     { icon: BellMinus, label: '韓國電影', href: '/douban?type=movie&tag=韩国' },
     { icon: Bomb, label: '日本電影', href: '/douban?type=movie&tag=日本' },
   ];
-
 
   // const { siteName } = useSite();
   // if (siteName !== 'MoonTV') {

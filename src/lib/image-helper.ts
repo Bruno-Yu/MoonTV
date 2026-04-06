@@ -123,8 +123,12 @@ export function cleanTitleForSearch(title: string): string {
   const cleaned = title
     // Strip trailing (YYYY) or （YYYY）
     .replace(/[（(]\d{4}[）)]/g, '')
-    // Strip episode markers: 第N集, EP01, E01
+    // Strip season markers: 第一季 第二季 第三季 … 第十季 第N季
+    .replace(/第[一二三四五六七八九十百千万\d]+季/g, '')
+    // Strip episode markers: 第N集, EP01, E01, S01E01
     .replace(/第\d+集/g, '')
+    .replace(/[Ss]\d+[Ee]\d+/g, '')
+    .replace(/[Ss]\d+/g, '')
     .replace(/[Ee][Pp]?\d+/g, '')
     // Strip square/angle bracket content: [tag], 【tag】
     .replace(/[【[][^\]】]*[】\]]/g, '')
@@ -181,7 +185,7 @@ function pickBestPoster(
     }
   }
 
-  if (bestScore < 0.5 || !best) return '';
+  if (bestScore < 0.4 || !best) return '';
   return `https://image.tmdb.org/t/p/w500${best}`;
 }
 

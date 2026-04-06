@@ -19,7 +19,6 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-
 interface MobileBottomNavProps {
   /**
    * 主动指定当前激活的路径。当未提供时，自动使用 usePathname() 获取的路径。

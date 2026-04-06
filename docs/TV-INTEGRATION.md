@@ -3,6 +3,7 @@
 ## ✅ 已完成項目
 
 ### 1. TV Focus 系統
+
 - ✅ TVFocusContext.tsx - Focus 管理核心
 - ✅ TVFocusableCard.tsx - 可 Focus 卡片元件
 - ✅ TVScrollableRow.tsx - 可 Focus 滾動列
@@ -11,16 +12,19 @@
 - ✅ useTVMode.ts - TV 模式檢測 Hook
 
 ### 2. TV 頁面
+
 - ✅ /tv 首頁 - Grid 佈局，6 個主要功能
 - ✅ /search/tv 搜尋頁 - 虛擬鍵盤 + 語音輸入
 
 ### 3. TV Bridge
+
 - ✅ tv-bridge.ts - WebView 橋接層
   - Android KeyCode 映射
   - 設備資訊獲取
   - JavaScript ↔ Kotlin 雙向通訊
 
 ### 4. Kotlin WebView 專案
+
 - ✅ MainActivity.kt - 主活動，遙控器事件攔截
 - ✅ WebAppInterface.kt - JavaScript 橋接介面
 - ✅ AndroidManifest.xml - 權限與配置
@@ -29,6 +33,7 @@
 - ✅ README.md - 完整開發文檔
 
 ### 5. 開發文檔
+
 - ✅ docs/TV-DEVELOPMENT.md - TV 開發指南
 
 ## 📁 文件結構
@@ -66,6 +71,7 @@ MoonTV/
 ## 🚀 快速開始
 
 ### 網頁端（測試用）
+
 ```bash
 # 啟動開發服務器
 pnpm dev
@@ -75,6 +81,7 @@ http://localhost:3000?tv=1
 ```
 
 ### Android 端（實際部署）
+
 ```bash
 cd MoonTV-Android
 
@@ -91,18 +98,21 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 ## 🎯 核心功能
 
 ### 1. 遙控器導航
+
 - ✅ 上下左右鍵 - Focus 導航
 - ✅ 確認鍵 - 選擇/播放
 - ✅ 返回鍵 - 返回上一頁
 - ✅ 自動滾動 - Focus 元素自動居中
 
 ### 2. TV 優化 UI
+
 - ✅ Grid 佈局 - 減少導航步驟
 - ✅ 大尺寸卡片 - 適合電視觀看
 - ✅ 清晰 Focus 樣式 - 綠色外框 + 陰影
 - ✅ 精簡導航 - 6 個主要項目
 
 ### 3. WebView 橋接
+
 - ✅ 完整攔截遙控器事件
 - ✅ JavaScript ↔ Kotlin 雙向通訊
 - ✅ 設備資訊獲取
@@ -110,12 +120,14 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 ## 🔧 配置說明
 
 ### 修改 WebView URL
+
 ```kotlin
 // MoonTV-Android/app/src/main/java/.../MainActivity.kt
 loadUrl("https://your-moontv-url.com?tv=1")
 ```
 
 ### 自定義 Focus 樣式
+
 ```css
 /* globals.css */
 .tv-mode .tv-focused {
@@ -129,6 +141,7 @@ loadUrl("https://your-moontv-url.com?tv=1")
 ## 📱 部署到 Chromecast
 
 ### 方式 1: USB 安裝
+
 ```bash
 # 1. 啟用開發者選項
 # 2. 啟用 USB 調試
@@ -138,11 +151,13 @@ adb install app-debug.apk
 ```
 
 ### 方式 2: Sideload
+
 1. 上傳 APK 到網頁
 2. 在 Chromecast 上打開網頁並下載
 3. 安裝 APK
 
 ### 方式 3: Android Studio
+
 1. 連接設備
 2. 點擊 Run 按鈕
 3. 自動安裝並啟動
@@ -150,6 +165,7 @@ adb install app-debug.apk
 ## 🧪 測試
 
 ### 本地測試
+
 ```bash
 # TV 模式
 http://localhost:3000?tv=1
@@ -159,6 +175,7 @@ F12 → Ctrl+Shift+P → "Show Rendering" → "Emulate CSS media type: tv"
 ```
 
 ### Chromecast 測試
+
 ```bash
 # 連接設備
 adb connect <TV-IP>:5555
@@ -175,21 +192,25 @@ adb logcat | grep "MoonTV"
 ## 📝 後續開發建議
 
 ### 1. 擴展 TV 頁面
+
 - [ ] 收藏頁面 TV 版本
 - [ ] 播放歷史 TV 版本
 - [ ] 豆瓣 Top250 TV 版本
 
 ### 2. 優化 Focus 系統
+
 - [ ] 添加 Focus 動畫過渡
 - [ ] 支援自定義 Focus 順序
 - [ ] 添加 Focus 歷史記錄
 
 ### 3. 增強遙控器功能
+
 - [ ] 語音搜索整合
 - [ ] 快捷鍵自定義
 - [ ] 長按功能
 
 ### 4. Android 專案優化
+
 - [ ] 添加深色主題
 - [ ] 錯誤日誌收集
 - [ ] 性能監控

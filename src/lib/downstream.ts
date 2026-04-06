@@ -1,10 +1,10 @@
 import { API_CONFIG, ApiSite, getConfig } from '@/lib/config';
+import {
+  fetchAlternativePosterUrl,
+  isDoubanImageUrl,
+} from '@/lib/image-helper';
 import { SearchResult, VideoDetail } from '@/lib/types';
 import { cleanHtmlTags } from '@/lib/utils';
-import {
-  isDoubanImageUrl,
-  fetchAlternativePosterUrl,
-} from '@/lib/image-helper';
 
 const config = getConfig();
 const MAX_SEARCH_PAGES: number = config.SiteConfig.SearchDownstreamMaxPage;

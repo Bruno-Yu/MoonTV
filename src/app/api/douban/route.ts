@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 
 import { getCacheTime } from '@/lib/config';
-import { DoubanItem, DoubanResult } from '@/lib/types';
 import {
-  isDoubanImageUrl,
   fetchAlternativePosterUrl,
+  isDoubanImageUrl,
 } from '@/lib/image-helper';
+import { DoubanItem, DoubanResult } from '@/lib/types';
 
 export const runtime = 'edge';
 
