@@ -62,7 +62,34 @@ async function initConfig() {
   }
   const storageType = process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage';
   if (storageType !== 'localstorage') {
-    // 数据库存储，读取并补全管理员配置
+    // 立即同步設置預設配置，確保 getConfig() 在非同步操作完成前不會回傳 undefined
+    cachedConfig = {
+      SiteConfig: {
+        SiteName: process.env.SITE_NAME || 'LunaTV',
+        Announcement:
+          process.env.ANNOUNCEMENT ||
+          '本站僅提供影視信息搜索服務，所有內容均來自第三方網站。本站不存儲任何視頻資源，不對任何內容的準確性、合法性、完整性負責。',
+        SearchDownstreamMaxPage:
+          Number(process.env.NEXT_PUBLIC_SEARCH_MAX_PAGE) || 5,
+        SiteInterfaceCacheTime: fileConfig.cache_time || 7200,
+        SearchResultDefaultAggregate:
+          process.env.NEXT_PUBLIC_AGGREGATE_SEARCH_RESULT !== 'false',
+      },
+      UserConfig: {
+        AllowRegister: process.env.NEXT_PUBLIC_ENABLE_REGISTER === 'true',
+        Users: [],
+      },
+      SourceConfig: Object.entries(fileConfig.api_site).map(([key, site]) => ({
+        key,
+        name: site.name,
+        api: site.api,
+        detail: site.detail,
+        from: 'config',
+        disabled: false,
+      })),
+    } as AdminConfig;
+
+    // 数据库存储，异步从 DB 读取并更新管理员配置
     const storage = getStorage();
     (async () => {
       try {
