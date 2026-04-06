@@ -1,5 +1,7 @@
 /* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 
+import { getRequestContext } from '@cloudflare/next-on-pages';
+
 import { AdminConfig } from './admin.types';
 import { Favorite, IStorage, PlayRecord } from './types';
 
@@ -38,11 +40,6 @@ export class D1Storage implements IStorage {
    */
   private async getDb(): Promise<any | null> {
     try {
-      // webpackIgnore: true prevents this module from being bundled into
-      // client component chunks while still loading at runtime on CF Edge.
-      const { getRequestContext } = await import(
-        /* webpackIgnore: true */ '@cloudflare/next-on-pages'
-      );
       const ctx = getRequestContext();
       const db = (ctx.env as any).moontv_db ?? null;
       if (!db) {
@@ -54,7 +51,8 @@ export class D1Storage implements IStorage {
         );
       }
       return db;
-    } catch {
+    } catch (err) {
+      console.error('[D1] getRequestContext() failed:', err);
       return null;
     }
   }

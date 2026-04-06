@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 
+import { getRequestContext } from '@cloudflare/next-on-pages';
 import { NextResponse } from 'next/server';
 
 export const runtime = 'edge';
@@ -7,7 +8,6 @@ export const runtime = 'edge';
 /**
  * GET /api/d1-health
  * Returns whether the D1 database binding (moontv_db) is available.
- * Used by the UI to verify D1 is connected before migration / data operations.
  */
 export async function GET() {
   if (process.env.NEXT_PUBLIC_STORAGE_TYPE !== 'cloudflare-d1') {
@@ -15,9 +15,6 @@ export async function GET() {
   }
 
   try {
-    const { getRequestContext } = await import(
-      /* webpackIgnore: true */ '@cloudflare/next-on-pages'
-    );
     const ctx = getRequestContext();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = (ctx.env as any).moontv_db ?? null;
