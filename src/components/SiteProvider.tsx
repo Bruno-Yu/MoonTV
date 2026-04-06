@@ -4,6 +4,8 @@ import { createContext, ReactNode, useContext, useEffect } from 'react';
 
 import { setApiToken } from '@/lib/api-token';
 
+import MigratePrompt from '@/components/MigratePrompt';
+
 const SiteContext = createContext<{ siteName: string; announcement?: string }>({
   // 默认值
   siteName: 'MoonTV',
@@ -36,6 +38,7 @@ export function SiteProvider({
   return (
     <SiteContext.Provider value={{ siteName, announcement }}>
       {children}
+      <MigratePrompt />
     </SiteContext.Provider>
   );
 }
