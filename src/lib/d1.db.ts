@@ -61,22 +61,25 @@ export class D1Storage implements IStorage {
 
   /**
    * Create all tables if they don't exist yet.
+   * Uses db.batch() with individual prepared statements because D1's exec()
+   * does not reliably support multiple semicolon-separated DDL statements.
    * Guarded by a module-level flag so DDL runs at most once per isolate.
    */
   private async ensureSchema(): Promise<void> {
     if (schemaInitialised) return;
     const db = await this.getDb();
     if (!db) {
-      schemaInitialised = true; // skip in local dev
+      // D1 not accessible (local dev or binding missing) — do NOT set flag
+      // so the next request can retry once the binding is available.
       return;
     }
-    await db.exec(`
-      CREATE TABLE IF NOT EXISTS users (
+    await db.batch([
+      db.prepare(`CREATE TABLE IF NOT EXISTS users (
         username TEXT PRIMARY KEY,
         password_hash TEXT NOT NULL,
         created_at INTEGER NOT NULL
-      );
-      CREATE TABLE IF NOT EXISTS play_records (
+      )`),
+      db.prepare(`CREATE TABLE IF NOT EXISTS play_records (
         rec_key TEXT NOT NULL,
         username TEXT NOT NULL,
         title TEXT NOT NULL,
@@ -88,8 +91,8 @@ export class D1Storage implements IStorage {
         total_time REAL NOT NULL DEFAULT 0,
         save_time INTEGER NOT NULL,
         PRIMARY KEY (username, rec_key)
-      );
-      CREATE TABLE IF NOT EXISTS favorites (
+      )`),
+      db.prepare(`CREATE TABLE IF NOT EXISTS favorites (
         fav_key TEXT NOT NULL,
         username TEXT NOT NULL,
         title TEXT NOT NULL,
@@ -98,18 +101,18 @@ export class D1Storage implements IStorage {
         total_episodes INTEGER NOT NULL DEFAULT 0,
         save_time INTEGER NOT NULL,
         PRIMARY KEY (username, fav_key)
-      );
-      CREATE TABLE IF NOT EXISTS search_history (
+      )`),
+      db.prepare(`CREATE TABLE IF NOT EXISTS search_history (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL,
         keyword TEXT NOT NULL,
         created_at INTEGER NOT NULL
-      );
-      CREATE TABLE IF NOT EXISTS admin_config (
-        id INTEGER PRIMARY KEY CHECK (id = 1),
+      )`),
+      db.prepare(`CREATE TABLE IF NOT EXISTS admin_config (
+        id INTEGER PRIMARY KEY,
         config_json TEXT NOT NULL
-      );
-    `);
+      )`),
+    ]);
     schemaInitialised = true;
   }
 
