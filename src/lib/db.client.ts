@@ -30,15 +30,12 @@ export interface PlayRecord {
 const PLAY_RECORDS_KEY = 'moontv_play_records';
 
 // ---- 环境变量 ----
-const STORAGE_TYPE = (() => {
-  const raw =
-    (typeof window !== 'undefined' &&
-      (window as any).RUNTIME_CONFIG?.STORAGE_TYPE) ||
-    (process.env.STORAGE_TYPE as 'localstorage' | 'redis' | undefined) ||
-    'localstorage';
-  // 兼容 redis => database
-  return raw;
-})();
+const STORAGE_TYPE =
+  (process.env.NEXT_PUBLIC_STORAGE_TYPE as
+    | 'localstorage'
+    | 'redis'
+    | 'cloudflare-d1'
+    | undefined) || 'localstorage';
 
 // ---------------- 搜索历史相关常量 ----------------
 const SEARCH_HISTORY_KEY = 'moontv_search_history';

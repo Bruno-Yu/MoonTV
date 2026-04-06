@@ -18,15 +18,12 @@ function LoginPageClient() {
   const { siteName } = useSite();
 
   // 当 STORAGE_TYPE 不为空且不为 localstorage 时，要求输入用户名
-  const shouldAskUsername =
-    typeof window !== 'undefined' &&
-    (window as any).RUNTIME_CONFIG?.STORAGE_TYPE &&
-    (window as any).RUNTIME_CONFIG?.STORAGE_TYPE !== 'localstorage';
+  const storageType = process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage';
+  const shouldAskUsername = storageType !== 'localstorage';
 
   // 是否允许注册
   const enableRegister =
-    typeof window !== 'undefined' &&
-    Boolean((window as any).RUNTIME_CONFIG?.ENABLE_REGISTER);
+    process.env.NEXT_PUBLIC_ENABLE_REGISTER === 'true';
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
