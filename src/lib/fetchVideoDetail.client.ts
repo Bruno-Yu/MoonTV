@@ -1,3 +1,5 @@
+import { apiFetch } from '@/lib/api-token';
+
 export interface VideoDetail {
   id: string;
   title: string;
@@ -33,7 +35,7 @@ export async function fetchVideoDetail({
   // 优先通过搜索接口查找精确匹配
   if (fallbackTitle) {
     try {
-      const searchResp = await fetch(
+      const searchResp = await apiFetch(
         `/api/search?q=${encodeURIComponent(fallbackTitle.trim())}`
       );
       if (searchResp.ok) {
@@ -53,7 +55,7 @@ export async function fetchVideoDetail({
   }
 
   // 调用 /api/detail 接口
-  const response = await fetch(`/api/detail?source=${source}&id=${id}`);
+  const response = await apiFetch(`/api/detail?source=${source}&id=${id}`);
   if (!response.ok) {
     throw new Error('获取详情失败');
   }

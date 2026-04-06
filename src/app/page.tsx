@@ -4,6 +4,7 @@ import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
 
+import { apiFetch } from '@/lib/api-token';
 // 客户端收藏 API
 import {
   clearAllFavorites,
@@ -60,8 +61,8 @@ function HomeClient() {
 
         // 并行获取热门电影和热门剧集
         const [moviesResponse, tvShowsResponse] = await Promise.all([
-          fetch('/api/douban?type=movie&tag=热门'),
-          fetch('/api/douban?type=tv&tag=热门'),
+          apiFetch('/api/douban?type=movie&tag=热门'),
+          apiFetch('/api/douban?type=tv&tag=热门'),
         ]);
 
         if (moviesResponse.ok) {

@@ -4,23 +4,41 @@ const nextConfig = {
   eslint: {
     dirs: ['src'],
   },
-  
-  // 簡化配置
+
   reactStrictMode: false,
   swcMinify: false,
 
+  // HTTP Security Headers (HTTP security headers on all responses)
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-XSS-Protection', value: '1; mode=block' },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
+    ];
+  },
+
   images: {
-    // 啟用 Next.js 圖片優化
-    // 允許所有外部圖片域名（包括 TMDB、豆瓣等）
+    // 只允许明确信任的图片域名（restricted image remote patterns）
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
-      {
-        protocol: 'http',
-        hostname: '**',
-      },
+      { protocol: 'https', hostname: '*.doubanio.com' },
+      { protocol: 'https', hostname: 'image.tmdb.org' },
+      { protocol: 'https', hostname: 'img.bgm.tv' },
+      // 中国视频源常用图片 CDN
+      { protocol: 'https', hostname: 'pic.rmb.bdstatic.com' },
+      { protocol: 'http', hostname: '*.doubanio.com' },
     ],
   },
 };

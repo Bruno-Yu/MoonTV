@@ -1,6 +1,8 @@
 'use client';
 
-import { createContext, ReactNode, useContext } from 'react';
+import { createContext, ReactNode, useContext, useEffect } from 'react';
+
+import { setApiToken } from '@/lib/api-token';
 
 const SiteContext = createContext<{ siteName: string; announcement?: string }>({
   // 默认值
@@ -20,6 +22,17 @@ export function SiteProvider({
   siteName: string;
   announcement?: string;
 }) {
+  useEffect(() => {
+    fetch('/api/server-config')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.apiToken) setApiToken(data.apiToken);
+      })
+      .catch(() => {
+        // server-config fetch failure is non-fatal
+      });
+  }, []);
+
   return (
     <SiteContext.Provider value={{ siteName, announcement }}>
       {children}

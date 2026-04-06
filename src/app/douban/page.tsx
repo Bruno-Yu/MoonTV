@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { useEffect, useRef, useState } from 'react';
 
+import { apiFetch } from '@/lib/api-token';
 import { DoubanItem, DoubanResult } from '@/lib/types';
 
 import DoubanCardSkeleton from '@/components/DoubanCardSkeleton';
@@ -78,7 +79,7 @@ function DoubanPageClient() {
         try {
           setIsLoadingMore(true);
 
-          const response = await fetch(
+          const response = await apiFetch(
             `/api/douban?type=${type}&tag=${tag}&pageSize=25&pageStart=${
               currentPage * 25
             }`

@@ -5,6 +5,7 @@ import { Search, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 
+import { apiFetch } from '@/lib/api-token';
 import {
   addSearchHistory,
   clearSearchHistory,
@@ -99,20 +100,19 @@ function SearchPageClient() {
   const fetchSearchResults = async (query: string) => {
     try {
       setIsLoading(true);
-      
-      const response = await fetch(
-        `/api/search?q=${encodeURIComponent(query.trim())}`,
+
+      const response = await apiFetch(
+        `/api/search?q=${encodeURIComponent(query.trim())}`
       );
-      
-      
+
       if (!response.ok) {
         console.error('API 回應錯誤:', response.status, response.statusText);
         setSearchResults([]);
         return;
       }
-       
+
       const data = await response.json();
-      
+
       setSearchResults(
         data.results.sort((a: SearchResult, b: SearchResult) => {
           // 標題部分符合的排在前面

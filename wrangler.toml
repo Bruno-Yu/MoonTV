@@ -5,4 +5,10 @@ compatibility_date = "2025-06-28"
 pages_build_output_dir = ".vercel/output/static"
 
 # 开启 Node.js API 兼容层（next-on-pages 已自动注入所需 polyfill）
-compatibility_flags = ["nodejs_compat"] 
+compatibility_flags = ["nodejs_compat"]
+
+# Cloudflare D1 数据库（用于持久化存储：收藏、播放记录、用户数据）
+[[d1_databases]]
+binding = "moontv_db"
+database_name = "moontv-db"
+database_id = "54c07ad7-9376-46a2-a399-8aec405d5b14"

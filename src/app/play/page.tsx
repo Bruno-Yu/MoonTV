@@ -8,6 +8,7 @@ import { Heart } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
 
+import { apiFetch } from '@/lib/api-token';
 import {
   deletePlayRecord,
   generateStorageKey,
@@ -392,7 +393,7 @@ function PlayPageClient() {
     setSourceSearchError(null);
 
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `/api/search?q=${encodeURIComponent(query.trim())}`
       );
       if (!response.ok) {
