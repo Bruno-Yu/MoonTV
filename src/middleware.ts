@@ -176,6 +176,14 @@ async function generateHmac(data: string, secret: string): Promise<string> {
 }
 
 function redirectToLogin(request: NextRequest, pathname: string): NextResponse {
+  // API routes must not redirect (307 preserves POST → /login has no POST handler → 405).
+  // Return 401 JSON so clients can handle it properly.
+  if (pathname.startsWith('/api/')) {
+    return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
   const loginUrl = new URL('/login', request.url);
   const fullUrl = `${pathname}${request.nextUrl.search}`;
   loginUrl.searchParams.set('redirect', fullUrl);
