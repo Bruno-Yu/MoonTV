@@ -44,6 +44,19 @@ export default function MigratePrompt() {
   async function handleMigrate() {
     setLoading(true);
     try {
+      // Step 1: Verify D1 is actually connected before wiping localStorage
+      const healthRes = await fetch('/api/d1-health');
+      if (healthRes.ok) {
+        const health = await healthRes.json() as { connected: boolean; help?: string };
+        if (!health.connected) {
+          setResult(
+            'D1 資料庫未連接！請至 Cloudflare Pages 後台 → Settings → ' +
+            'Functions → D1 database bindings → 新增 moontv_db 後重新部署，再試遷移。'
+          );
+          return;
+        }
+      }
+
       const playRecords = JSON.parse(
         localStorage.getItem(LS_PLAY_RECORDS) || '{}'
       );
@@ -68,11 +81,21 @@ export default function MigratePrompt() {
 
       const data = await res.json();
       const { imported } = data;
+
+      // Step 2: Verify data was actually written to D1 (double-check)
+      const hadPlayRecords = Object.keys(playRecords).length > 0;
+      if (hadPlayRecords && imported.playRecords === 0) {
+        setResult(
+          '遷移警告：D1 未能儲存播放記錄。請確認 D1 binding 設定後再試。localStorage 資料已保留。'
+        );
+        return;
+      }
+
       setResult(
         `遷移成功！播放記錄 ${imported.playRecords} 筆，收藏 ${imported.favorites} 筆，搜尋記錄 ${imported.searchHistory} 筆`
       );
 
-      // Clear source keys only after successful migration
+      // Clear source keys only after verified successful migration
       localStorage.removeItem(LS_PLAY_RECORDS);
       localStorage.removeItem(LS_FAVORITES);
       localStorage.removeItem(LS_SEARCH_HISTORY);

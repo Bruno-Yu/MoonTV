@@ -258,7 +258,7 @@ export default function VideoCard({
             className={`object-cover transition-all duration-700 ease-out ${
               isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95 blur-sm'
             } group-hover:scale-105`}
-            onLoadingComplete={() => setIsLoaded(true)}
+            onLoad={() => setIsLoaded(true)}
             referrerPolicy='no-referrer'
             priority={false}
           />

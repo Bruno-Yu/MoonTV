@@ -31,15 +31,12 @@ const nextConfig = {
   },
 
   images: {
-    // 只允许明确信任的图片域名（restricted image remote patterns）
-    remotePatterns: [
-      { protocol: 'https', hostname: '*.doubanio.com' },
-      { protocol: 'https', hostname: 'image.tmdb.org' },
-      { protocol: 'https', hostname: 'img.bgm.tv' },
-      // 中国视频源常用图片 CDN
-      { protocol: 'https', hostname: 'pic.rmb.bdstatic.com' },
-      { protocol: 'http', hostname: '*.doubanio.com' },
-    ],
+    // Cloudflare Pages does not support Next.js Image Optimization.
+    // Using unoptimized=true so <Image> renders as a plain <img> tag,
+    // which avoids remotePatterns restrictions and works with all CDN domains
+    // used by Chinese video source APIs.
+    // Douban images are already routed through /api/image-proxy in VideoCard.
+    unoptimized: true,
   },
 };
 

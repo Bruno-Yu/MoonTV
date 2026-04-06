@@ -44,7 +44,16 @@ export class D1Storage implements IStorage {
         /* webpackIgnore: true */ '@cloudflare/next-on-pages'
       );
       const ctx = getRequestContext();
-      return (ctx.env as any).moontv_db ?? null;
+      const db = (ctx.env as any).moontv_db ?? null;
+      if (!db) {
+        console.error(
+          '[D1] moontv_db binding is missing. ' +
+          'Go to Cloudflare Pages Dashboard → your project → Settings → ' +
+          'Functions → D1 database bindings → Add binding: ' +
+          'Variable name = moontv_db, Database = moontv-db'
+        );
+      }
+      return db;
     } catch {
       return null;
     }
