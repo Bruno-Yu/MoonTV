@@ -33,7 +33,11 @@ export async function GET(request: Request) {
       { results: flattenedResults },
       {
         headers: {
-          'Cache-Control': `public, max-age=${cacheTime}`,
+          // 空結果多半是來源暫時失敗或逾時，不快取，避免同一個搜尋連續 2 小時都顯示沒有結果
+          'Cache-Control':
+            flattenedResults.length === 0
+              ? 'no-store'
+              : `public, max-age=${cacheTime}`,
         },
       }
     );
