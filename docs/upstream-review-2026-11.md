@@ -32,23 +32,37 @@
 - `pnpm typecheck` 通過；`pnpm lint` 0 error（警告都是原本就有的）。
 - 在瀏覽器輸入「進擊的巨人」，送出的是 `q=进击的巨人`，畫面列出 215 筆結果，沒有錯誤。
 
-**尚未驗證**：還沒在 Cloudflare（Edge／workerd）上跑過。要等 Bruno 同意 push 之後，用 preview 部署確認。
+**正式版直接證實**（2026-11-07）：正式部署的 hash 網址沒有被 Access 保護（見第三節）。從那裡打 `/api/search?q=海贼王`，回 182 筆，其中 4 筆沒有片名，跟本機修正前一模一樣。
+
+**本機 Cloudflare 執行環境（`pnpm pages:build` 加上 `wrangler pages dev`）驗證過**：修正後「海贼王」連續多次都是 220 筆、13 個來源、0 筆壞資料。
+
+### 第二次追加的修正（Bruno 授權「你決定」之後）
+
+| commit  | 問題                                                                                                                                                               | 修正                                                                                                          |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| dadbbae | 只有網頁搜尋框會做繁轉簡。TV 搜尋頁、搜尋歷史、`?q=` 網址、`/api/search/one` 都送出原字。正式版實測：「進擊的巨人」只有 **1 個來源**有結果，「进击的巨人」有 13 個 | 在伺服器端的 `searchFromApi` 統一轉簡體，所有入口都涵蓋。`/api/search/one` 的精確比對也改用簡體。畫面顯示不變 |
+| 080af86 | 空結果也被設成 `public, max-age=7200`。只要有一次暫時性失敗，同一個搜尋 2 小時內都會顯示「沒有結果」                                                               | 空結果改成 `no-store`                                                                                         |
+
+本機 workerd 驗證：繁體「進擊的巨人」從 1 個來源變成 13 個來源、267 筆；`/api/search/one?q=海賊王` 從 404 變成 200。
+
+### 尚未查明（等 preview 部署再量）
+
+本機 workerd 大約 15 次請求裡有 2 次，所有來源同時在 8 秒逾時，最後 0 筆。之後沒有再重現。正式環境的 Workers 每個請求最多同時開 6 條對外連線，但本機不會模擬這個限制（我實驗過）。正式版用「海贼王」實測時，13 個來源都有成功，所以目前沒有證據顯示線上會因此遺失來源。這次不針對它修改。
 
 ### 順帶發現（這次沒有修，請 Bruno 決定）
 
-1. **失效的來源**（從 Mac mini 測，2026-11-07）：
+1. **失效的來源**（2026-11-07，Mac mini 和本機 workerd 結果一致）：
 
    - DNS 查不到：dbzy、fczy888
-   - 連線被拒：mozhua
+   - 連線中斷：mozhua
    - 403：yinghua、wujin
    - 回 HTML，不是 JSON：heimuer、wolong、wwzy
    - 回「暫不支援搜索」：tyyszy、suoni
 
-   這些來源每次搜尋都會白白多等最多 8 秒的逾時。注意：Cloudflare 機房的出口 IP 跟 Mac mini 不同，結果可能不一樣。
+   workerd 的 log 顯示它們都是「立刻失敗」，不會拖慢搜尋，所以這次沒有移除。
 
 2. 搜尋框送出後會把框裡的字換成簡體（`setSearchQuery(trimmed)`），結果的片名也是簡體顯示。這跟「畫面一律顯示繁體」不一致，但這是原本就有的行為，這次沒有改。
 3. 送出一次搜尋會打兩次 `/api/search`：一次是表單送出，一次是網址參數變動觸發的 effect。這是原本就有的。
-4. 從網址 `?q=` 或歷史紀錄進來的搜尋**不會**做繁轉簡，只有在搜尋框送出時會轉。
 
 ---
 
@@ -255,9 +269,13 @@
 
 ### 需要注意的地方
 
-1. **preview 環境沒有任何變數**。push 分支後的 preview 部署會變成：沒有密碼、`localstorage` 模式。所以用 preview 測搜尋沒問題，但**測不到 D1 和登入**。而且 preview 跟正式版綁的是同一個 D1，如果之後在 preview 設定 D1 模式，就會寫到正式資料。
-2. `NEXT_PUBLIC_STORAGE_TYPE` 設成 secret。`NEXT_PUBLIC_*` 變數是在**建置時**寫進前端程式的，Cloudflare 的 secret 在建置階段讀不讀得到，我**沒有驗證**。middleware 在執行時讀得到，但前端可能拿到的是預設的 `localstorage`。建議改成一般（plaintext）變數，或者確認建置記錄。
-3. `TMDB_API_KEY` 沒設，所以用的是寫死在程式裡的 key（moontv.md 已經列為待辦）。
-4. `API_SECRET` 沒設，公開 API 沒有 token 保護。目前是靠前面的 Cloudflare Access 擋住。
+1. **🔒 Cloudflare Access 的保護有漏洞**。Access 應用程式 `moontv` 只涵蓋 `moontv-52s.pages.dev`，**沒有涵蓋 `*.moontv-52s.pages.dev`**。每個部署都有自己的 hash 網址，正式版也一樣（例如 `7bc6c262.moontv-52s.pages.dev`），從外面可以直接打：
+   - 頁面會導到 `/login`，`/api/favorites` 回 401。帳號資料仍然有密碼保護。
+   - 但 `/api/search`、`/api/detail`、`/api/douban`、`/api/image-proxy`、`/api/server-config` 不需要登入就能用，速率限制是每個 IP 每分鐘 60 次。
+   - **建議**：在 Access 應用程式加上 `*.moontv-52s.pages.dev`。這是改 Cloudflare 設定，需要 Bruno 同意。
+2. **preview 環境沒有任何變數**。push 分支後的 preview 部署會變成：沒有密碼、`localstorage` 模式。preview 網址也不在 Access 保護範圍內，所以**任何拿到網址的人都能直接使用**。用 preview 測搜尋沒問題，但**測不到 D1 和登入**。preview 跟正式版綁的是同一個 D1；只要 preview 維持 `localstorage` 模式，就不會寫到 D1。
+3. `NEXT_PUBLIC_STORAGE_TYPE` 設成 secret，但**已確認建置時有讀到**：正式版登入頁的程式碼已經沒有 `'localstorage'` 預設值，使用者名稱欄位也是無條件顯示。`/api/server-config` 也回報 `cloudflare-d1`。這個疑慮已解除。
+4. `TMDB_API_KEY` 沒設，所以用的是寫死在程式裡的 key（moontv.md 已經列為待辦）。
+5. `API_SECRET` 沒設，公開 API 沒有 token 保護。**現在不建議設**：前端只在載入時跟 `/api/server-config` 拿一次 token，而 token 只有 ±5 分鐘有效，之後也不會更新。一設下去，頁面開超過 5 分鐘搜尋就會回 401。要先把前端改成會更新 token，或改用 Access 保護（第 1 點），才有意義。
 
 以上**都沒有改動** Cloudflare 上的任何設定。
