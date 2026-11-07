@@ -110,3 +110,11 @@ export const zhConverter = {
   s2t: (text: string, trie = s2tTrie) => applyTrieConversion(text, trie),
   t2s: (text: string, trie = t2sTrie) => applyTrieConversion(text, trie),
 };
+
+/**
+ * 整理要送出的搜尋字串：去頭尾空白、合併連續空白、繁體轉簡體。
+ * 畫面顯示繁體，但影音來源 API 是簡體，送出前一定要轉換。
+ */
+export function normalizeSearchQuery(raw: string): string {
+  return zhConverter.t2s(raw.trim().replace(/\s+/g, ' '));
+}

@@ -17,7 +17,7 @@ import { SearchResult } from '@/lib/types';
 import PageLayout from '@/components/PageLayout';
 import VideoCard from '@/components/VideoCard';
 
-import { zhConverter } from './zh-converter';
+import { normalizeSearchQuery } from './zh-converter';
 
 function SearchPageClient() {
   // 搜索历史
@@ -147,14 +147,9 @@ function SearchPageClient() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    let trimmed = searchQuery.trim().replace(/\s+/g, ' ');
+    // 將搜索內容整理並轉換為簡體中文（來源 API 為簡體）
+    const trimmed = normalizeSearchQuery(searchQuery);
     if (!trimmed) return;
-
-    // 將搜索內容轉換為簡體中文
-    // if (typeof window !== 'undefined' && (window as any).zhconver) {
-    //   trimmed = (window as any).zhconver.t2s(trimmed);
-    // }
-    trimmed = zhConverter.t2s(trimmed);
 
     // 回显搜索框
     setSearchQuery(trimmed);

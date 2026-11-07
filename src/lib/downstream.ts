@@ -212,7 +212,10 @@ export async function searchFromApi(
 
       const additionalResults = await Promise.all(additionalPagePromises);
 
-      results.push(...additionalResults.filter((pr) => pr.length > 0));
+      // 逐頁攤平合併：每一頁是一個陣列，必須推入個別項目而非整頁陣列
+      additionalResults.forEach((pageResults) => {
+        results.push(...pageResults);
+      });
     }
 
     const posterReplacements = await processPostersInBatch(
