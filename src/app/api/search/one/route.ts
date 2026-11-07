@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 import { getAvailableApiSites, getCacheTime } from '@/lib/config';
 import { searchFromApi } from '@/lib/downstream';
 
+import { zhConverter } from '@/app/search/zh-converter';
+
 export const runtime = 'edge';
 
 // OrionTV 兼容接口
@@ -39,7 +41,9 @@ export async function GET(request: Request) {
     }
 
     const results = await searchFromApi(targetSite, query);
-    const result = results.filter((r) => r.title === query);
+    // searchFromApi 會把查詢轉成簡體，精確比對也要用簡體
+    const simplifiedQuery = zhConverter.t2s(query);
+    const result = results.filter((r) => r.title === simplifiedQuery);
     const cacheTime = getCacheTime();
 
     if (result.length === 0) {

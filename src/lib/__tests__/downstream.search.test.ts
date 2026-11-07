@@ -95,3 +95,32 @@ describe('searchFromApi multi-page merge', () => {
     expect(results.every((r) => typeof r.title === 'string')).toBe(true);
   });
 });
+
+// Sources index Simplified Chinese. The TV search page, history links and
+// /api/search/one pass the query through as typed, so searchFromApi itself
+// must convert it; a Traditional query otherwise hits far fewer sources.
+describe('searchFromApi query conversion', () => {
+  const originalFetch = global.fetch;
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
+  it.each([
+    ['進擊的巨人', '进击的巨人'],
+    ['进击的巨人', '进击的巨人'],
+    ['Breaking Bad', 'Breaking Bad'],
+  ])('sends %p to every source page as wd=%p', async (query, expected) => {
+    const fetchMock = mockPages({
+      1: jsonResponse({ pagecount: 2, list: [item(1, 'A')] }),
+      2: jsonResponse({ pagecount: 2, list: [item(2, 'B')] }),
+    });
+
+    await searchFromApi(site, query);
+
+    const sent = fetchMock.mock.calls.map(([url]) =>
+      new URL(url as string).searchParams.get('wd')
+    );
+    expect(sent).toHaveLength(2);
+    expect(sent.every((wd) => wd === expected)).toBe(true);
+  });
+});

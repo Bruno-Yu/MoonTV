@@ -6,6 +6,8 @@ import {
 import { SearchResult, VideoDetail } from '@/lib/types';
 import { cleanHtmlTags } from '@/lib/utils';
 
+import { zhConverter } from '@/app/search/zh-converter';
+
 const config = getConfig();
 const MAX_SEARCH_PAGES: number = config.SiteConfig.SearchDownstreamMaxPage;
 
@@ -70,8 +72,10 @@ interface ApiSearchItem {
 
 export async function searchFromApi(
   apiSite: ApiSite,
-  query: string
+  rawQuery: string
 ): Promise<SearchResult[]> {
+  // 來源 API 為簡體：不論從哪個入口（網頁、TV、歷史紀錄、OrionTV）進來都轉成簡體
+  const query = zhConverter.t2s(rawQuery);
   try {
     const apiBaseUrl = apiSite.api;
     const apiUrl =

@@ -30,7 +30,7 @@ The search form SHALL normalise the typed query before navigation and before cal
 
 #### Scenario: Traditional query
 
-- **WHEN** the user submits ` 進擊的巨人 `
+- **WHEN** the user submits `進擊的巨人`
 - **THEN** the query sent to `/api/search` is `进击的巨人`
 
 ##### Example: normalisation table
